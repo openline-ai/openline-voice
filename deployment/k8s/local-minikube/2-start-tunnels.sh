@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export NAMESPACE_NAME=oasis-dev
+export NAMESPACE_NAME=voice-dev
 minikube tunnel --bind-address 127.0.0.1 &
 if [ $(uname -m) == "x86_64" ];
 then
