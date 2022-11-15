@@ -149,15 +149,15 @@ if [ "x$1" == "xbuild" ]; then
   
   if [ $(uname -m) == "x86_64" ];
   then
-    cd oasis-voice/kamailio/;docker build -t ghcr.io/openline-ai/openline-oasis/openline-kamailio-server:otter .;cd $VOICE_HOME
-    cd oasis-voice/asterisk/;docker build -t ghcr.io/openline-ai/openline-oasis/openline-asterisk-server:otter .;cd $VOICE_HOME
+    cd packages/server/kamailio/;docker build -t ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter .;cd $VOICE_HOME
+    cd packages/server/asterisk/;docker build -t ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter .;cd $VOICE_HOME
   fi
 else
   
   if [ $(uname -m) == "x86_64" ];
   then
-    docker pull ghcr.io/openline-ai/openline-oasis/openline-kamailio-server:otter
-    docker pull ghcr.io/openline-ai/openline-oasis/openline-asterisk-server:otter
+    docker pull ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter
+    docker pull ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter
   fi
 
 
@@ -165,14 +165,14 @@ fi
 
 if [ $(uname -m) == "x86_64" ];
 then
-  minikube image load ghcr.io/openline-ai/openline-oasis/openline-kamailio-server:otter --daemon
-  minikube image load ghcr.io/openline-ai/openline-oasis/openline-asterisk-server:otter --daemon
+  minikube image load ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter --daemon
+  minikube image load ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter --daemon
 fi
 
 if [ $(uname -m) == "x86_64" ];
 then
-  cd $VOICE_HOME/oasis-voice/kamailio/sql
-  SQL_USER=openline-oasis SQL_DATABABASE=openline-oasis ./build_db.sh local-kube
+  cd $VOICE_HOME/packages/serverkamailio/sql
+  SQL_USER=openline-voice SQL_DATABABASE=openline-voice ./build_db.sh local-kube
 fi
   
 cd $VOICE_HOME/deployment/k8s/local-minikube

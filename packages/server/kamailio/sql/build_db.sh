@@ -1,10 +1,10 @@
 #!/bin/bash
 
-NAMESPACE_NAME="oasis-dev"
+NAMESPACE_NAME="voice-dev"
 FILES="standard-create.sql permissions-create.sql carriers.sql"
 if [ "x$1" == "xlocal-kube" ]; then
   while [ -z "$pod" ]; do
-    pod=$(kubectl get pods -n $NAMESPACE_NAME|grep oasis-postgres|grep Running| cut -f1 -d ' ')
+    pod=$(kubectl get pods -n $NAMESPACE_NAME|grep voice-postgres|grep Running| cut -f1 -d ' ')
     if [ -z "$pod" ]; then
       echo "database not ready waiting"
       sleep 1

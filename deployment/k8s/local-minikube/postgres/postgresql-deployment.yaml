@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voice-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voice-postgres
+  template:
+    metadata:
+      labels:
+        app: voice-postgres
+    spec:
+      containers:
+        - name: voice-postgres
+          image: postgres:13.4
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: voice-postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: voice-postgredb
+      volumes:
+        - name: voice-postgredb
+          persistentVolumeClaim:
+            claimName: voice-postgres-pv-claim
