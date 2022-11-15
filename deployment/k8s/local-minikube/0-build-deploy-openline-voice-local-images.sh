@@ -25,7 +25,7 @@ function getOasis () {
     git clone https://github.com/openline-ai/openline-oasis.git
   fi
 }
-if [ $(uname -m) == "x86_64" ];
+if [ $(uname -m) != "x86_64" ];
 then
     echo "CPU not supported x86_64 required"
     exit -1
