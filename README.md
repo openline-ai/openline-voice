@@ -59,6 +59,30 @@ TBD
 - For help, feature requests, or chat with fellow Openline enthusiasts, check out our [slack community][slack]!
 - Our [docs site][docs] has references for developer functionality, including the Graph API
 
+## 👩‍💻 Codebase
+
+### Technologies
+
+Here's a list of the big technologies that we use:
+
+- TBD
+
+### Folder structure
+
+```sh
+openline-voice/
+├── architecture            # Architectural documentation
+├── deployment              
+│   ├── infra               # Infrastructure-as-code
+│   └── scripts             # Deployment scripts
+└── packages
+    ├── apps                # Front end web applications
+    │   ├── voice-plugin    # customerOS data explorer
+    ├── core                # Shared core libraries
+    └── server              # Back end database & API server
+```
+
+
 ## 💪 Contributions
 
 - We love contributions big or small!  Please check out our [guide on how to get started][contributions].
