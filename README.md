@@ -39,15 +39,39 @@
 
 
 ## 👋 Overview
+![Octavian Tails On The Phone](images/otter_phone.jpeg)
 
-TBD
+The Openline Voice platform allows WebRTC to PSTN calling
 
 ## 🚀 Installation
 
 Download using the following command
 
-```sh-session
-TBD
+### set up a minikube environment
+
+* This process has been tested onUbuntu 20.04 the install process may need to be adapted for other platforms
+* If you use codespaces, be sure to use the 4 core environment
+* The voice network can not run on arm64, x86_64 must be used
+
+
+#### Run the deployment script
+
+```
+deployment/k8s/local-minikube/0-build-deploy-openline-voice-local-images.sh build
+```
+
+after the script completes you can validate the status of the setup by running
+```
+kubectl -n voice-dev get pod
+```
+
+if you are not running the minikube on your local machine and the minikube is behind a nat you will probably need to install the turn server to have audio
+```
+./1-start-turn.sh
+```
+To start the tunnels for the core services you can run the folowing
+```
+./2-start-tunnels.sh
 ```
 
 ## 🙌 Features

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: voice-postgres-config
+  labels:
+    app: voice-postgres
+data:
+  POSTGRES_DB: openline-voice
+  POSTGRES_USER: openline-voice
+  POSTGRES_PASSWORD: my-secret-password
+
+
