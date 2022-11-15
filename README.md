@@ -39,8 +39,9 @@
 
 
 ## 👋 Overview
+![Octavian Tails On The Phone](images/otter_phone.jpeg)
 
-TBD
+The Openline Voice platform allows WebRTC to PSTN calling
 
 ## 🚀 Installation
 
