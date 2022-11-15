@@ -5,7 +5,7 @@ name: Kamailio Toolchain
 
 on:
   push:
-    branches: [ "otter"]
+    branches: [ "otter", "3-move-voice-over-from-oasis"]
     paths:
       - 'packages/server/kamailio/**'
       - '.github/workflows/kamailio.yml'
