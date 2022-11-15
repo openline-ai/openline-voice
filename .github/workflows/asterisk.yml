@@ -5,7 +5,7 @@ name: Asterisk Toolchain
 
 on:
   push:
-    branches: [ "otter"]
+    branches: [ "otter", "3-move-voice-over-from-oasis"]
     paths:
       - 'packages/server/asterisk/**'
       - '.github/workflows/asterisk.yml'
