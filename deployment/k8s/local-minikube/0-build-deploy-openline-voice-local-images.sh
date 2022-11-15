@@ -172,7 +172,7 @@ fi
 
 if [ $(uname -m) == "x86_64" ];
 then
-  cd $VOICE_HOME/packages/serverkamailio/sql
+  cd $VOICE_HOME/packages/server/kamailio/sql
   SQL_USER=openline-voice SQL_DATABABASE=openline-voice ./build_db.sh local-kube
 fi
   
