@@ -147,6 +147,7 @@ if [ "x$1" == "xbuild" ]; then
 	  brew install protobuf
   fi
   
+  cd  $VOICE_HOME
   if [ $(uname -m) == "x86_64" ];
   then
     cd packages/server/kamailio/;docker build -t ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter .;cd $VOICE_HOME
