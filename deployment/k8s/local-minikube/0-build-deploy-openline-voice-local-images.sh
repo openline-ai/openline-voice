@@ -92,7 +92,7 @@ then
 else
   echo "Installing Oasis"
   getOasis
-  $OASIS_HOME/deployment/k8s/local-minikube/0-build-deploy-openline-oasis-local-images.sh
+  $OASIS_HOME/deployment/k8s/local-minikube/0-build-deploy-openline-oasis-local-images.sh $1
 fi
 
 if [[ $(kubectl get namespaces) == *"$NAMESPACE_NAME"* ]];
