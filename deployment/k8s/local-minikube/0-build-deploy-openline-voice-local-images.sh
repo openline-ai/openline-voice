@@ -16,10 +16,13 @@ function getCustomerOs () {
     cd "$VOICE_HOME/../"
     git clone https://github.com/openline-ai/openline-customer-os.git
   fi
+  cd $CUSTOMER_OS_HOME/deployment/scripts/
+  ./0-get-config.sh
+  cd "$VOICE_HOME/../"
 }
 
 function getOasis () {
-  if [ ! -d $CUSTOMER_OS_HOME ];
+  if [ ! -d $OASIS_HOME ];
   then
     cd "$VOICE_HOME/../"
     git clone https://github.com/openline-ai/openline-oasis.git
@@ -42,20 +45,21 @@ then
   if [ "x$(lsb_release -i|cut -d: -f 2|xargs)" == "xUbuntu" ];
   then
     echo "missing base dependencies, installing"
-    $CUSTOMER_OS_HOME/deployment/k8s/local-minikube/0-ubuntu-install-prerequisites.sh
+    cd $CUSTOMER_OS_HOME/deployment/scripts/
+    $CUSTOMER_OS_HOME/deployment/scripts/1-ubuntu-dependencies.sh
+    if [ $INSTALLED_DOCKER == 1 ];
+	  then 
+	    echo "Docker has just been installed"
+	    echo "Please logout and log in for the group changes to take effect"
+	    echo "Once logged back in, re-run this script to resume the installation"
+	    exit
+    fi
   fi
   if [ "x$(uname -s)" == "xDarwin" ]; 
   then
-    echo "Base env not ready, follow up the setup procedure at the following link"
-    echo "https://github.com/openline-ai/openline-customer-os/tree/otter/deployment/k8s/local-minikube#setup-environment-for-osx"
-    exit
-  fi
-  if [ $INSTALLED_DOCKER == 1 ];
-  then 
-    echo "Docker has just been installed"
-    echo "Please logout and log in for the group changes to take effect"
-    echo "Once logged back in, re-run this script to resume the installation"
-    exit
+    echo "missing base dependencies, installing"
+    cd $CUSTOMER_OS_HOME/deployment/scripts/
+    $CUSTOMER_OS_HOME/deployment/scripts/1-mac-dependencies.sh
   fi
 fi
 
@@ -76,14 +80,16 @@ then
 else
   echo "Installing Customer OS Base"
   getCustomerOs
-  $CUSTOMER_OS_HOME/deployment/k8s/local-minikube/1-deploy-customer-os-base-infrastructure-local.sh
+  cd $CUSTOMER_OS_HOME/deployment/scripts/
+  $CUSTOMER_OS_HOME/deployment/scripts/2-base-install.sh
 fi
 
 if [ -z "$(kubectl get deployment customer-os-api -n $CUSTOMER_OS_NAME_SPACE)" ]; 
 then
   echo "Installing Customer OS Aplicaitons"
   getCustomerOs
-  $CUSTOMER_OS_HOME/deployment/k8s/local-minikube/2-build-deploy-customer-os-local-images.sh $1
+  cd $CUSTOMER_OS_HOME/deployment/scripts/
+  $CUSTOMER_OS_HOME/deployment/scripts/3-deploy.sh
 fi  
 
 if [[ $(kubectl get namespaces) == *"$OASIS_NAME_SPACE"* ]];
