@@ -1,4 +1,4 @@
-name: Build Message Store
+name: Build Voice Plugin
 
 on:
   push:
