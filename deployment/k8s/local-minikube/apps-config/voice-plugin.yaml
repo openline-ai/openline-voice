@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment                 # Type of Kubernetes resource
+metadata:
+  name: voice-plugin           # Name of the Kubernetes resource
+spec:
+  replicas: 1                    # Number of pods to run at any given time
+  selector:
+    matchLabels:
+      app: voice-plugin        # This deployment applies to any Pods matching the specified label
+  template:                      # This deployment will create a set of pods using the configurations in this template
+    metadata:
+      labels:                    # The labels that will be applied to all of the pods in this deployment
+        app: voice-plugin
+    spec:                        # Spec for the container which will run in the Pod
+      containers:
+        - image: ghcr.io/openline-ai/openline-voice/openline-voice-plugin-server:otter
+          name: voice-plugin
+          imagePullPolicy: Never
+          env:
+            - name: VOICE_API_SERVER_ADDRESS
+              value: :11010
+            - name: DB_USER
+              value: openline-voice
+            - name: DB_PASSWORD
+              value: my-secret-password
+            - name: DB_NAME
+              value: openline-voice
+            - name: DB_HOST
+              value: voice-postgres-service.voice-dev.svc.cluster.local
+            - name: DB_PORT
+              value: 5432

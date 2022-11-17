@@ -158,6 +158,7 @@ if [ "x$1" == "xbuild" ]; then
   then
     cd packages/server/kamailio/;docker build -t ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter .;cd $VOICE_HOME
     cd packages/server/asterisk/;docker build -t ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter .;cd $VOICE_HOME
+    cd packages/apps/voice-plugin/;docker build -t ghcr.io/openline-ai/openline-voice/voice-plugin:otter .;cd $VOICE_HOME
   fi
 else
   
@@ -165,6 +166,7 @@ else
   then
     docker pull ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter
     docker pull ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter
+    docker pull ghcr.io/openline-ai/openline-voice/voice-plugin:otter
   fi
 
 
@@ -174,6 +176,7 @@ if [ $(uname -m) == "x86_64" ];
 then
   minikube image load ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter --daemon
   minikube image load ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter --daemon
+  minikube image load ghcr.io/openline-ai/openline-voice/voice-plugin:otter --daemon
 fi
 
 if [ $(uname -m) == "x86_64" ];
@@ -190,6 +193,8 @@ then
   kubectl apply -f apps-config/asterisk-k8s-service.yaml --namespace $NAMESPACE_NAME
   kubectl apply -f apps-config/kamailio.yaml --namespace $NAMESPACE_NAME
   kubectl apply -f apps-config/kamailio-k8s-service.yaml --namespace $NAMESPACE_NAME
+  kubectl apply -f apps-config/voice-plugin.yaml --namespace $NAMESPACE_NAME
+  kubectl apply -f apps-config/voice-plugin-k8s-service.yaml --namespace $NAMESPACE_NAME
 fi
 
 cd $VOICE_HOME/deployment/k8s/local-minikube
