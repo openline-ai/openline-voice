@@ -1,9 +1,9 @@
 # Set up Development Environment
 
 ```
-go install
+go install github.com/swaggo/swag/cmd/swag@latest
 go generate
-go build
+go build -o bin/voice-plugin
 ```
 
 ## Environment Variables
