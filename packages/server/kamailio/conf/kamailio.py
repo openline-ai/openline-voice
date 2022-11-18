@@ -497,7 +497,7 @@ class kamailio:
     def ksr_rtimer_address_reload(self, msg, evname):
         KSR.info("reloading address table\n")
         KSR.jsonrpcs.exec('{"jsonrpc": "2.0", "method": "permissions.addressReload", "id": 1}')
-        KSR.info("reload address result: " + KSR.pv.getw("$jsonrpl(code))") + " - the body is: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
+        KSR.info("reload address result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
         return 1
 
     def ksr_websocket_event(self, msg, evname):
