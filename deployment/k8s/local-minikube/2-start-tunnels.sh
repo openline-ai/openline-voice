@@ -5,6 +5,7 @@ minikube tunnel --bind-address 127.0.0.1 &
 if [ $(uname -m) == "x86_64" ];
 then
   kubectl port-forward --namespace $NAMESPACE_NAME svc/kamailio-service 8080:8080 &
+  kubectl port-forward --namespace $NAMESPACE_NAME svc/voice-plugin-service 11010:11010 &
 fi
 
 wait
