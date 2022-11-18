@@ -193,6 +193,7 @@ then
   kubectl apply -f apps-config/asterisk-k8s-service.yaml --namespace $NAMESPACE_NAME
   kubectl apply -f apps-config/kamailio.yaml --namespace $NAMESPACE_NAME
   kubectl apply -f apps-config/kamailio-k8s-service.yaml --namespace $NAMESPACE_NAME
+  kubectl apply -f apps-config/kamailio-k8s-loadbalancer-service.yaml --namespace $NAMESPACE_NAME
   kubectl apply -f apps-config/voice-plugin.yaml --namespace $NAMESPACE_NAME
   kubectl apply -f apps-config/voice-plugin-k8s-service.yaml --namespace $NAMESPACE_NAME
 fi

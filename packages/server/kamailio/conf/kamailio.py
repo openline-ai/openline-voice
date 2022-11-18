@@ -106,7 +106,7 @@ class kamailio:
             KSR.setflag(FLT_ACC) # do accounting
 
         #check if call is from carrier
-        if KSR.permissions.allow_source_address(1) > 0:
+        if  not KSR.is_WS() and KSR.permissions.allow_source_address(1) > 0:
             return self.ksr_route_from_carrier(msg)
 
 
