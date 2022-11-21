@@ -2,9 +2,14 @@ name: Build Voice Plugin
 
 on:
   push:
+    branches: [ "otter"]
     paths:
       - 'packages/apps/voice-plugin/**'
       - '.github/workflows/build-voice-plugin.yml'
+  pull_request:
+    branches: [ "otter" ]
+  release:
+    types: [created, edited]
 
 env:
   REGISTRY: ghcr.io
