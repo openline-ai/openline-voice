@@ -11,6 +11,8 @@ on:
       - '.github/workflows/asterisk.yml'
   pull_request:
     branches: [ "otter" ]
+  release:
+    types: [created, edited]
 
 permissions:
   contents: read

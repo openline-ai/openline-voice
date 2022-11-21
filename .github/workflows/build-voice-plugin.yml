@@ -5,6 +5,8 @@ on:
     paths:
       - 'packages/apps/voice-plugin/**'
       - '.github/workflows/build-voice-plugin.yml'
+  release:
+    types: [created, edited]
 
 env:
   REGISTRY: ghcr.io
