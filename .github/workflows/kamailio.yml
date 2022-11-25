@@ -10,7 +10,6 @@ on:
       - 'packages/server/kamailio/**'
       - '.github/workflows/kamailio.yml'
   pull_request:
-    branches: [ "otter" ]
   release:
     types: [created, edited]
 
@@ -53,6 +52,7 @@ jobs:
       needs:
         - test
 
+      if: github.ref_name == 'otter' || github.event_name == 'release'
       runs-on: ubuntu-latest
 
       steps:
