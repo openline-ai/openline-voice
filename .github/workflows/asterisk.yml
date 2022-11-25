@@ -10,7 +10,6 @@ on:
       - 'packages/server/asterisk/**'
       - '.github/workflows/asterisk.yml'
   pull_request:
-    branches: [ "otter" ]
   release:
     types: [created, edited]
 
@@ -25,6 +24,7 @@ env:
 jobs:
     publish:
       name: "Push Asterisk Docker Image"
+      if: github.ref_name == 'otter' || github.event_name == 'release'
       runs-on: ubuntu-latest
 
       steps:
