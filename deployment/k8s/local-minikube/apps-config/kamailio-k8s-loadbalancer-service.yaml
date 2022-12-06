@@ -11,5 +11,10 @@ spec:
     - name: sip
       port: 5060
       targetPort: 5060
+      protocol: UDP
+    - name: sip-tcp
+      protocol: TCP
+      port: 5060
+      targetPort: 5060
   selector:
     app: kamailio         

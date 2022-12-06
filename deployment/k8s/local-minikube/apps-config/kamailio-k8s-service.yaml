@@ -12,7 +12,7 @@ spec:
       protocol: UDP
       port: 5060
       targetPort: 5060
-    - name: sip_tcp
+    - name: sip-tcp
       protocol: TCP
       port: 5060
       targetPort: 5060

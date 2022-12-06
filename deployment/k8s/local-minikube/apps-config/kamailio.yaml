@@ -13,7 +13,7 @@ spec:
         app: kamailio
     spec:                        # Spec for the container which will run in the Pod
       containers:
-        - image: ghcr.io/openline-ai/openline-voice/openline-kamailio-server:otter
+        - image: ghcr.io/openline-ai/openline-voice/openline-kamailio-server:latest
           name: kamailio
           imagePullPolicy: Never
           env:
@@ -28,12 +28,12 @@ spec:
             - name: AUTH_SECRET
               value: 2c42a1b6-d776-4083-b0b6-44fecea2d022
             - name: SQL_USER
-              value: openline-voice
+              value: openline
             - name: SQL_PASSWORD
-              value: my-secret-password
+              value: password
             - name: SQL_DATABASE
-              value: openline-voice
+              value: openline
             - name: SQL_HOST
-              value: voice-postgres-service.voice-dev.svc.cluster.local
+              value: postgresql-customer-os-dev.openline.svc.cluster.local
             - name: ASTERISK_HOST
-              value: asterisk.voice-dev.svc.cluster.local
+              value: asterisk.openline.svc.cluster.local

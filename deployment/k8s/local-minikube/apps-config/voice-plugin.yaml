@@ -13,19 +13,19 @@ spec:
         app: voice-plugin
     spec:                        # Spec for the container which will run in the Pod
       containers:
-        - image: ghcr.io/openline-ai/openline-voice/voice-plugin:otter
+        - image: ghcr.io/openline-ai/openline-voice/voice-plugin:latest
           name: voice-plugin
           imagePullPolicy: Never
           env:
             - name: VOICE_API_SERVER_ADDRESS
               value: ":11010"
             - name: DB_USER
-              value: openline-voice
+              value: openline
             - name: DB_PASSWORD
-              value: my-secret-password
+              value: password
             - name: DB_NAME
-              value: openline-voice
+              value: openline
             - name: DB_HOST
-              value: voice-postgres-service.voice-dev.svc.cluster.local
+              value: postgresql-customer-os-dev.openline.svc.cluster.local
             - name: DB_PORT
               value: "5432"
