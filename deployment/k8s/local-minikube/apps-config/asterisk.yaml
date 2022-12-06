@@ -14,7 +14,7 @@ spec:
         app: asterisk
     spec:                        # Spec for the container which will run in the Pod
       containers:
-        - image: ghcr.io/openline-ai/openline-voice/openline-asterisk-server:otter
+        - image: ghcr.io/openline-ai/openline-voice/openline-asterisk-server:latest
           name: asterisk
           imagePullPolicy: Never
           env:
