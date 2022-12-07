@@ -10,6 +10,11 @@ RUN sh -c 'cp /usr/src/codecs/opus/*.so /usr/lib/x86_64-linux-gnu/asterisk/modul
 RUN sh -c 'cp /usr/src/codecs/opus/codec_opus_config-en_US.xml /usr/share/asterisk/documentation/'
 RUN sh -c 'rm /usr/lib/x86_64-linux-gnu/asterisk/modules/format_ogg_opus_open_source.so'
 
+RUN sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y make python3-pip'
+RUN sh -c 'pip3 install grpcio-tools'
+COPY call_recorder/ /usr/local/call_recorder/
+RUN sh -c 'cd /usr/local/call_recorder/;make generate'
+
 COPY docker_entry.sh /
 COPY scripts/asterisk_network_setup.sh /usr/sbin/
 COPY conf/extensions.conf /etc/asterisk/

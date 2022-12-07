@@ -35,7 +35,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo sh -c 'add-apt-repository universe && apt-get update'",
-      "sudo sh -c 'apt-get install -y asterisk sox'",
+      "sudo sh -c 'apt-get install -y asterisk sox python3 python3-pip make'",
       "sudo sh -c 'mkdir -p /usr/src/codecs/opus'",
       "sudo sh -c 'cd /usr/src/codecs/opus && curl -sL http://downloads.digium.com/pub/telephony/codec_opus/${local.opus_codec}.tar.gz | tar --strip-components 1 -xz'",
       "sudo sh -c 'cp /usr/src/codecs/opus/*.so /usr/lib/x86_64-linux-gnu/asterisk/modules/'",
@@ -53,8 +53,17 @@ build {
 	source = "scripts"
 	destination = "/tmp/asterisk/"
   }
+
+  provisioner "file" { 
+	source = "call_recorder"
+	destination = "/tmp/"
+  }
+
   provisioner "shell" {
     inline = [
+      "sudo sh -c 'cp -a /tmp/call_recorder /usr/local/'",
+      "sudo sh -c 'pip3 install grpcio-tools'",
+      "sudo sh -c 'cd /usr/local/call_recorder;make generate'",
       "sudo sh -c 'cp -v /tmp/asterisk/conf/* /etc/asterisk/'",
       "sudo sh -c 'cp -v /tmp/asterisk/scripts/asterisk_network_setup.sh /usr/sbin/'",
       "sudo sh -c 'chmod a+x /tmp/asterisk/scripts/asterisk_network_setup.sh'",
