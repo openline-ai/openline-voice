@@ -62,7 +62,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo sh -c 'cp -a /tmp/call_recorder /usr/local/'",
-      "sudo sh -c 'pip3 install grpcio-tools'",
+      "sudo sh -c 'pip3 install grpcio-tools pydub git+https://github.com/openai/whisper.git twisted'",
       "sudo sh -c 'cd /usr/local/call_recorder;make generate'",
       "sudo sh -c 'cp -v /tmp/asterisk/conf/* /etc/asterisk/'",
       "sudo sh -c 'cp -v /tmp/asterisk/scripts/asterisk_network_setup.sh /usr/sbin/'",

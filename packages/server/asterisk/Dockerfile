@@ -11,7 +11,7 @@ RUN sh -c 'cp /usr/src/codecs/opus/codec_opus_config-en_US.xml /usr/share/asteri
 RUN sh -c 'rm /usr/lib/x86_64-linux-gnu/asterisk/modules/format_ogg_opus_open_source.so'
 
 RUN sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y make python3-pip'
-RUN sh -c 'pip3 install grpcio-tools'
+RUN sh -c 'pip3 install grpcio-tools pydub git+https://github.com/openai/whisper.git twisted'
 COPY call_recorder/ /usr/local/call_recorder/
 RUN sh -c 'cd /usr/local/call_recorder/;make generate'
 

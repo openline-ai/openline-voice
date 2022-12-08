@@ -26,3 +26,5 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
+            - name: MESSAGE_STORE
+              value: message-store-service.openline.svc.cluster.local:9009
