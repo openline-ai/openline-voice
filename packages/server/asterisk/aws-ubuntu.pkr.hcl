@@ -35,7 +35,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo sh -c 'add-apt-repository universe && apt-get update'",
-      "sudo sh -c 'apt-get install -y asterisk sox python3 python3-pip make'",
+      "sudo sh -c 'apt-get install -y asterisk sox python3 python3-pip make git'",
       "sudo sh -c 'mkdir -p /usr/src/codecs/opus'",
       "sudo sh -c 'cd /usr/src/codecs/opus && curl -sL http://downloads.digium.com/pub/telephony/codec_opus/${local.opus_codec}.tar.gz | tar --strip-components 1 -xz'",
       "sudo sh -c 'cp /usr/src/codecs/opus/*.so /usr/lib/x86_64-linux-gnu/asterisk/modules/'",
