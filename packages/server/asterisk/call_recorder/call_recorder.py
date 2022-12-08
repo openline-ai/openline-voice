@@ -90,8 +90,10 @@ def run():
     callTime = int(sys.argv[4])
 
 
-    soundIn = AudioSegment.from_wav("/Users/torreysearle/dde498a6-05ea-4ba5-a7c0-7250ba193ca8-in.wav")
-    soundOut = AudioSegment.from_wav("/Users/torreysearle/dde498a6-05ea-4ba5-a7c0-7250ba193ca8-out.wav")
+    inFile = "/var/spool/asterisk/monitor/"+sys.argv[1] + "_in.wav"
+    outFile = "/var/spool/asterisk/monitor/" + sys.argv[1] + "_out.wav"
+    soundIn = AudioSegment.from_wav(inFile)
+    soundOut = AudioSegment.from_wav(outFile)
 
     print("Call duration %f" % soundIn.duration_seconds)
 
@@ -126,16 +128,8 @@ def run():
             msgTime = Timestamp(seconds=callTime+int(element['start']/1000), nanos=0)
             sendMessage(user.username, contact.username, computeIsInbound(element['direction'], fromPstn), msgTime, result["text"])
             print("At %d seconds %s said: %s " % (element['start']/1000,element['direction'],result["text"]))
-
-
-
-    #
-#    with wave.open("/var/spool/asterisk/monitor/" + sys.argv[1]) as mywav:
-#        duration_seconds = mywav.getnframes() / mywav.getframerate()
-#        print(f"Length of the WAV file: {duration_seconds:.1f} s")
-
-    print("Call From %s to %s" % (sys.argv[2], sys.argv[3]))
-
+    os.remove(inFile)
+    os.remove(outFile)
 
 if __name__ == '__main__':
     logging.basicConfig()
