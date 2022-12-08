@@ -13,7 +13,7 @@ def run():
         print("Incorrect number of arguments passed got %d expected 4" % n)
         exit(-1)
 
-    with wave.open("/var/spool/asterisk/monitoring/" + sys.argv[1]) as mywav:
+    with wave.open("/var/spool/asterisk/monitor/" + sys.argv[1]) as mywav:
         duration_seconds = mywav.getnframes() / mywav.getframerate()
         print(f"Length of the WAV file: {duration_seconds:.1f} s")
 
