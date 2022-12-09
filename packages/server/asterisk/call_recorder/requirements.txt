@@ -1,0 +1,4 @@
+grpcio-tools
+pydub
+git+https://github.com/openai/whisper.git
+twisted

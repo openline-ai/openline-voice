@@ -28,3 +28,5 @@ spec:
                   fieldPath: status.hostIP
             - name: MESSAGE_STORE
               value: message-store-service.openline.svc.cluster.local:9009
+            - name: OASIS_API_GRPC
+              value: oasis-api-service.openline.svc.cluster.local:9009

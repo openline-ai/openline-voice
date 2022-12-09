@@ -3,6 +3,8 @@
 import grpc
 from proto import messagestore_pb2
 from proto import messagestore_pb2_grpc
+from proto import oasisapi_pb2
+from proto import oasisapi_pb2_grpc
 import logging
 from pydub import AudioSegment
 from pydub.silence import detect_nonsilent
@@ -47,6 +49,10 @@ def makeChunks(audio_segment_in, audio_segment_out, output_ranges_in, output_ran
     chunks.sort(key=sortStart)
     return chunks
 
+def sendNewMessageEvent(id: int):
+    with grpc.insecure_channel(os.getenv('OASIS_API_GRPC')) as channel:
+        stub = oasisapi_pb2_grpc.OasisApiServiceStub(channel)
+        stub.newMessageEvent(oasisapi_pb2.OasisMessageId(messageId=id))
 def sendMessage(user: str, contact: str, isInbound: bool, msgTime: Timestamp, msg: str):
     if isInbound:
         direction=messagestore_pb2.INBOUND
@@ -62,6 +68,7 @@ def sendMessage(user: str, contact: str, isInbound: bool, msgTime: Timestamp, ms
                                                              type=messagestore_pb2.MESSAGE
                                                              ))
         print(("Message created with id: " + str(response.id)))
+        return response.id
 
 def computeIsInbound(direction: str, fromPstn: bool):
     if direction == "in":
@@ -115,18 +122,19 @@ def run():
             in detect_nonsilent(soundOut, min_silence_len, silence_thresh, seek_step)
     ]
     print ("Got %d messages " % len(output_ranges_out))
-    model = whisper.load_model("base")
+    model = whisper.load_model("small", download_root="/tmp/model")
 
     audio_chunks = makeChunks(soundIn, soundOut, output_ranges_in, output_ranges_out)
     #print(dumper.dump(audio_chunks))
     for element in audio_chunks:
-        outputFileName = "%s_%d.wav"%(element['direction'],element['start'])
+        outputFileName = "%/tmp/s_%d.wav"%(element['direction'],element['start'])
         element['chunks'].export(outputFileName, format="wav")
         result = model.transcribe(outputFileName)
         os.remove(outputFileName)
         if result["text"] != "":
             msgTime = Timestamp(seconds=callTime+int(element['start']/1000), nanos=0)
-            sendMessage(user.username, contact.username, computeIsInbound(element['direction'], fromPstn), msgTime, result["text"])
+            msgId = sendMessage(user.username, contact.username, computeIsInbound(element['direction'], fromPstn), msgTime, result["text"])
+            sendNewMessageEvent(msgId)
             print("At %d seconds %s said: %s " % (element['start']/1000,element['direction'],result["text"]))
     os.remove(inFile)
     os.remove(outFile)
