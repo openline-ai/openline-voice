@@ -12,10 +12,8 @@ import whisper
 import itertools
 import sys
 import os
-import dumper
 from twisted.protocols import sip
 from google.protobuf.timestamp_pb2 import Timestamp
-import time
 
 def makeChunks(audio_segment_in, audio_segment_out, output_ranges_in, output_ranges_out):
     # from the itertools documentation
@@ -127,7 +125,7 @@ def run():
     audio_chunks = makeChunks(soundIn, soundOut, output_ranges_in, output_ranges_out)
     #print(dumper.dump(audio_chunks))
     for element in audio_chunks:
-        outputFileName = "%/tmp/s_%d.wav"%(element['direction'],element['start'])
+        outputFileName = "/tmp/%s_%d.wav"%(element['direction'],element['start'])
         element['chunks'].export(outputFileName, format="wav")
         result = model.transcribe(outputFileName)
         os.remove(outputFileName)
