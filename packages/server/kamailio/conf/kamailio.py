@@ -306,8 +306,8 @@ class kamailio:
         user = KSR.pv.get("$(var(dest){uri.user})")
         if user == "echo":
             #route to echo test
-            return self.ksr_route_asterisk(msg, dest)
-        elif KSR.registrar.registered("location") > 0:
+            return 1
+        elif KSR.registrar.registered("location", dest) > 0:
             KSR.info("Destination %s is WEBRTC\n" % (dest))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: webrtc\r\n")
             return 1
