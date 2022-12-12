@@ -128,7 +128,9 @@ class kamailio:
         if self.ksr_route_registrar(msg)==-255 :
             return 1
 
-        return self.ksr_route_from_webrtc(msg)
+        if self.ksr_route_from_webrtc(msg) == 1:
+            return self.ksr_route_asterisk(msg)
+        return -255
 
 
     def ksr_route_auth(self, msg):
@@ -205,6 +207,8 @@ class kamailio:
             elif KSR.is_NOTIFY() :
                 # Add Record-Route for in-dialog NOTIFY as per RFC 6665.
                 KSR.rr.record_route()
+            elif KSR.isREFER():
+                self.ksr_route_from_webrtc(msg)
 
             self.ksr_route_relay(msg)
             return -255
@@ -304,7 +308,7 @@ class kamailio:
         elif KSR.registrar.registered("location") > 0:
             KSR.info("Destination %s is WEBRTC\n" % (KSR.pv.get("$ru")))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: webrtc\r\n")
-            return self.ksr_route_asterisk(msg)
+            return 1
         elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
             KSR.info("Number found, checking if PSTN is activated\n")
             carrier = None
@@ -320,7 +324,7 @@ class kamailio:
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: pstn\r\n")
             KSR.hdr.append("X-Openline-Dest-Carrier: " + record['carrier'] + "\r\n")
             KSR.hdr.append("X-Openline-CallerID: " + record['e164'] + "\r\n")
-            return self.ksr_route_asterisk(msg)
+            return 1
         else:
             KSR.info("Destination not a number nor is registered")
             KSR.tm.t_send_reply(404, "Destination Not Found")
