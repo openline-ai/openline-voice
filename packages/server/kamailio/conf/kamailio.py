@@ -207,7 +207,7 @@ class kamailio:
             elif KSR.is_NOTIFY() :
                 # Add Record-Route for in-dialog NOTIFY as per RFC 6665.
                 KSR.rr.record_route()
-            elif KSR.isREFER():
+            elif KSR.is_REFER():
                 self.ksr_route_from_webrtc(msg)
 
             self.ksr_route_relay(msg)
