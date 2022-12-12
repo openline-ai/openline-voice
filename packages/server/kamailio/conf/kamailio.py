@@ -128,8 +128,8 @@ class kamailio:
         if self.ksr_route_registrar(msg)==-255 :
             return 1
 
-        if self.ksr_route_from_webrtc(msg) == 1:
-            return self.ksr_route_asterisk(msg)
+        if self.ksr_route_from_webrtc(msg, KSR.pv.gete("$ru")) == 1:
+            return self.ksr_route_asterisk(msg, KSR.pv.gete("$ru"))
         return -255
 
 
@@ -208,7 +208,7 @@ class kamailio:
                 # Add Record-Route for in-dialog NOTIFY as per RFC 6665.
                 KSR.rr.record_route()
             elif KSR.is_REFER():
-                self.ksr_route_from_webrtc(msg)
+                self.ksr_route_from_webrtc(msg, KSR.pv.gete("$(hdr(Refer-To){nameaddr.uri})"))
 
             self.ksr_route_relay(msg)
             return -255
@@ -300,16 +300,18 @@ class kamailio:
 
 
     # got a call from the webrtc, check if destination is pstn or webrtc and route to asterisk
-    def ksr_route_from_webrtc(self, msg):
+    def ksr_route_from_webrtc(self, msg, dest):
         KSR.tm.t_newtran()
-        if KSR.pv.gete("$rU") == "echo":
+        KSR.pv.sets("$var(dest)", dest)
+        user = KSR.pv.get("$(var(dest){uri.user}")
+        if user == "echo":
             #route to echo test
-            return self.ksr_route_asterisk(msg)
+            return self.ksr_route_asterisk(msg, dest)
         elif KSR.registrar.registered("location") > 0:
-            KSR.info("Destination %s is WEBRTC\n" % (KSR.pv.get("$ru")))
+            KSR.info("Destination %s is WEBRTC\n" % (dest))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: webrtc\r\n")
             return 1
-        elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
+        elif re.search("^[+]?[0-9]+$", user) is not None:
             KSR.info("Number found, checking if PSTN is activated\n")
             carrier = None
             e164 = None
@@ -350,14 +352,14 @@ class kamailio:
         KSR.hdr.append("X-Openline-Origin-Carrier: " + KSR.pv.gete("$avp(carrier)") + "\r\n")
         KSR.pv.sets("$ru", result['sipuri'])
         KSR.info("Routing call to %s\n" + result['sipuri'])
-        return self.ksr_route_asterisk(msg)
+        return self.ksr_route_asterisk(msg, result['sipuri'])
 
-    def ksr_route_asterisk(self, msg):
+    def ksr_route_asterisk(self, msg, dest):
         rc = KSR.dispatcher.ds_select_dst(0, 3)
 
         KSR.hdr.remove("X-Openline-UUID")
         KSR.hdr.append("X-Openline-UUID: " + str(uuid.uuid4()) + "\r\n")
-        KSR.hdr.append("X-Openline-Dest: " + KSR.pv.gete("$ru") + "\r\n")
+        KSR.hdr.append("X-Openline-Dest: " + dest + "\r\n")
         if KSR.pv.gete("$rU") != "echo":
             KSR.pv.sets("$rU", "transcode")
 
