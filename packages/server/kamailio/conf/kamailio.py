@@ -303,7 +303,7 @@ class kamailio:
     def ksr_route_from_webrtc(self, msg, dest):
         KSR.tm.t_newtran()
         KSR.pv.sets("$var(dest)", dest)
-        user = KSR.pv.get("$(var(dest){uri.user}")
+        user = KSR.pv.get("$(var(dest){uri.user})")
         if user == "echo":
             #route to echo test
             return self.ksr_route_asterisk(msg, dest)
