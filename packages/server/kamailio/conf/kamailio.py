@@ -129,7 +129,7 @@ class kamailio:
             return 1
 
         if self.ksr_route_from_webrtc(msg, KSR.pv.gete("$ru")) == 1:
-            return self.ksr_route_asterisk(msg, KSR.pv.gete("$ru"))
+            return self.ksr_route_asterisk(msg)
         return -255
 
 
@@ -208,7 +208,11 @@ class kamailio:
                 # Add Record-Route for in-dialog NOTIFY as per RFC 6665.
                 KSR.rr.record_route()
             elif KSR.is_REFER():
-                self.ksr_route_from_webrtc(msg, KSR.pv.gete("$(hdr(Refer-To){nameaddr.uri})"))
+                dest = KSR.pv.gete("$(hdr(Refer-To){nameaddr.uri})")
+                if self.ksr_route_from_webrtc(msg, dest) == 1:
+                    KSR.hdr.append("X-Openline-Dest: " + dest + "\r\n")
+                else:
+                    KSR.info("REFER: ksr_route_from_webrtc rejected the request")
 
             self.ksr_route_relay(msg)
             return -255
@@ -352,14 +356,13 @@ class kamailio:
         KSR.hdr.append("X-Openline-Origin-Carrier: " + KSR.pv.gete("$avp(carrier)") + "\r\n")
         KSR.pv.sets("$ru", result['sipuri'])
         KSR.info("Routing call to %s\n" + result['sipuri'])
-        return self.ksr_route_asterisk(msg, result['sipuri'])
+        return self.ksr_route_asterisk(msg)
 
-    def ksr_route_asterisk(self, msg, dest):
+    def ksr_route_asterisk(self, msg):
         rc = KSR.dispatcher.ds_select_dst(0, 3)
-
         KSR.hdr.remove("X-Openline-UUID")
         KSR.hdr.append("X-Openline-UUID: " + str(uuid.uuid4()) + "\r\n")
-        KSR.hdr.append("X-Openline-Dest: " + dest + "\r\n")
+        KSR.hdr.append("X-Openline-Dest: " + KSR.pv.gete("$ru") + "\r\n")
         if KSR.pv.gete("$rU") != "echo":
             KSR.pv.sets("$rU", "transcode")
 
