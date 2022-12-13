@@ -204,7 +204,7 @@ class kamailio:
                     return -255
             elif KSR.is_NOTIFY() :
                 if "SIP/2.0 100" in KSR.pv.gete("$rb"):
-                    KSR.log("Filtering Trying notify\b")
+                    KSR.info("Filtering Trying notify\n")
                     KSR.sl.sl_send_reply(200, "Filtered")
                     return -255
                 # Add Record-Route for in-dialog NOTIFY as per RFC 6665.
