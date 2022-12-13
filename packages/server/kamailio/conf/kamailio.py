@@ -210,6 +210,9 @@ class kamailio:
                 # Add Record-Route for in-dialog NOTIFY as per RFC 6665.
                 KSR.rr.record_route()
             elif KSR.is_REFER() :
+                # check if it is an authenticated
+                if self.ksr_route_auth(msg) == -255:
+                    return 1
                 self.ksr_route_update_refer(msg)
             self.ksr_route_relay(msg)
             return -255
