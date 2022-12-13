@@ -293,6 +293,7 @@ class kamailio:
         KSR.pv.sets("$avp(apass)", result['ha1'])
         KSR.tm.t_on_failure("ksr_failure_trunk_auth")
         return self.ksr_route_relay(msg)
+
     def ksr_route_transfer_invite(self, msg):
         KSR.info("Routing call transfer invite\n")
         dest = KSR.pv.gete("$hdr(X-Openline-Dest)")
@@ -318,6 +319,7 @@ class kamailio:
             self.ksr_route_location(msg)
             return 1
         return 1
+
     def ksr_route_from_asterisk(self, msg):
         KSR.info("Routing from asterisk\n")
         if KSR.pv.get("$hdr(Referred-By)") is not None:
