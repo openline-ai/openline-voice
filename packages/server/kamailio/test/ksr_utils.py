@@ -166,6 +166,25 @@ def get_special_pvar(key):
     elif key == "$rd":
         return get_user(pvar_get("$ru"))
 
+    result = re.search("^\$\((.*)\)$", key)
+    if result is not None:
+        text_op = result.group(1)
+
+        if text_op.endswith("{uri.user}"):
+            key = pvar_get("$(%s)"% text_op[:-len("{uri.user}")])
+            return get_user(key)
+        if text_op.endswith("{nameaddr.uri}"):
+            key = pvar_get("$(%s)"% text_op[:-len("{nameaddr.uri}")])
+            result = re.search("^\<(.*)\>", key)
+            if result is not None:
+                return result.group(1)
+            else:
+                return key
+        else:
+            key = pvar_get("$%s"% text_op)
+            return key
+
+
 
     result = re.search("^\$hdr\((.*)\)$", key)
     if result is not None:

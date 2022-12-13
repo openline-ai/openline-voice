@@ -168,6 +168,125 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Origin-Carrier)"), "test_carrier", "Carrier not SET!")
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest)"), "sip:AgentSmith@agent.openline.ai", "X-Openline-Dest not set!")
         self.assertTrue(ksr_relay_called, "Call was not routed!")
+
+    def test_REFER_from_webrtc(self):
+        ksr_utils.hdr_append("Refer-To: <sip:torrey@openline.ai>\r\n")
+        result = ksr_utils.pvar_get("$(hdr(Refer-To){nameaddr.uri}{uri.user})")
+        self.assertEqual("torrey", result)
+
+    def test_INVITE_from_asterisk_transfer_to_pstn(self):
+        ksr_utils.pvar_set("$rm", "INVITE")
+        ksr_utils.pvar_set("$ru", "sip:127.0.0.1")
+        ksr_utils.pvar_set("$fu", "sip:transcode@agent.openline.ai")
+        ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
+        ksr_utils.pvar_set("$Rp", 5060)
+        ksr_utils.hdr_append("X-Openline-UUID: my uuid\r\n")
+        ksr_utils.hdr_append("X-Openline-Dest: sip:+44075755588858@agent.openline.ai\r\n")
+        ksr_utils.hdr_append("Referred-By: <sip:AgentSmith@agent.openline.ai>\r\n")
+
+        ksr_relay_called = False
+        ksr_on_failure_called = False
+
+
+        def my_relay():
+            nonlocal ksr_relay_called
+            print("Inside t_relay()\n")
+            ksr_relay_called = True
+            return 1
+
+        def on_failure(handler: str):
+            nonlocal ksr_on_failure_called
+            print("Inside t_on_failure()\n")
+            ksr_on_failure_called = True
+            return 1
+
+
+        KSR._mock_data["tm"]["t_relay"] = my_relay
+        KSR._mock_data["tm"]["t_on_failure"] = on_failure
+
+        #do not register in location db
+
+        #indicate the call is not from a carrier ip address
+        KSR._mock_data["permissions"]["allow_source_address"] = 0
+        #indicate the call is coming from an asterisk ip
+        KSR._mock_data["dispatcher"]["ds_is_from_list"] = 1
+
+        k = kamailio.kamailio()
+        k.kamailioDB = TestKamailioDatabase.TestKamailioDatabase()
+
+        def mock_lookup_carrier(carrier:str):
+            self.assertEqual(carrier,"test_carrier", "Incorrect carrier key lookup in database")
+
+            return {"username": "my_username",
+                        "ha1": "my_hashed_password",
+                        "domain": "carrier.domain"}
+        k.kamailioDB._mock['lookup_carrier'] = mock_lookup_carrier
+        def mock_sipuri_mapping(sipuri:str):
+            self.assertEqual(sipuri,"sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
+            return {"e164": '+328080970',
+                    "carrier": 'test_carrier'
+                    }
+        k.kamailioDB._mock['find_sipuri_mapping'] = mock_sipuri_mapping
+
+        k.ksr_request_route(None)
+
+        self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:+44075755588858@carrier.domain", "RURI not set to expected destination")  # add assertion here
+        self.assertTrue(ksr_relay_called, "Call was not routed!")
+        self.assertEqual("+328080970", ksr_utils.pvar_get("$fU"))
+        #ensure the digest auth handler was armed
+        self.assertTrue(ksr_on_failure_called, "Call was not routed!")
+        self.assertEqual("my_username", ksr_utils.pvar_get("$avp(auser)"))
+        self.assertEqual("my_hashed_password", ksr_utils.pvar_get("$avp(apass)"))
+
+    def test_INVITE_from_asterisk_transfer_to_webrtc(self):
+        ksr_utils.pvar_set("$rm", "INVITE")
+        ksr_utils.pvar_set("$ru", "sip:127.0.0.1")
+        ksr_utils.pvar_set("$fu", "sip:transcode@agent.openline.ai")
+        ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
+        ksr_utils.pvar_set("$Rp", 5060)
+        ksr_utils.hdr_append("X-Openline-UUID: my uuid\r\n")
+        ksr_utils.hdr_append("X-Openline-Dest: sip:dev@agent.openline.ai\r\n")
+        ksr_utils.hdr_append("Referred-By: <sip:AgentSmith@agent.openline.ai>\r\n")
+        ksr_utils.registrations["location"]["sip:dev@agent.openline.ai"] = "sip:10.0.0.1:9999"
+
+        ksr_relay_called = False
+        ksr_on_failure_called = False
+
+
+        def my_relay():
+            nonlocal ksr_relay_called
+            print("Inside t_relay()\n")
+            ksr_relay_called = True
+            return 1
+
+        def on_failure(handler: str):
+            nonlocal ksr_on_failure_called
+            print("Inside t_on_failure()\n")
+            ksr_on_failure_called = True
+            return 1
+
+
+        KSR._mock_data["tm"]["t_relay"] = my_relay
+        KSR._mock_data["tm"]["t_on_failure"] = on_failure
+
+        #do not register in location db
+
+        #indicate the call is not from a carrier ip address
+        KSR._mock_data["permissions"]["allow_source_address"] = 0
+        #indicate the call is coming from an asterisk ip
+        KSR._mock_data["dispatcher"]["ds_is_from_list"] = 1
+
+        k = kamailio.kamailio()
+        k.kamailioDB = TestKamailioDatabase.TestKamailioDatabase()
+
+
+        k.ksr_request_route(None)
+
+        self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:10.0.0.1:9999", "RURI not set to expected destination")  # add assertion here
+        self.assertTrue(ksr_relay_called, "Call was not routed!")
+
+
+
     def test_INVITE_from_asterisk_to_pstn(self):
         ksr_utils.pvar_set("$rm", "INVITE")
         ksr_utils.pvar_set("$ru", "sip:127.0.0.1")
