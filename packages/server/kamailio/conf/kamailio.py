@@ -303,7 +303,7 @@ class kamailio:
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
             KSR.info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
-            KSR.hdr.append("P-Asserted-Identity: <sip:%s@openline.ai>\r\n"%record['e164'])
+            KSR.pv.sets("$fU", record['e164'])
             return self.ksr_route_to_carrier(msg, record['carrier'])
         else:
             KSR.info("transfer: attempt local routing\n")
