@@ -296,8 +296,6 @@ class kamailio:
 
         if re.search("^[+]?[0-9]+$", user) is not None:
             KSR.info("Number found, checking if PSTN is activated\n")
-            carrier = None
-            e164 = None
             KSR.info(
                 "Looking up %s in database\n" % (source))
             record = self.kamailioDB.find_sipuri_mapping(source)
@@ -305,9 +303,9 @@ class kamailio:
                 KSR.info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
-            KSR.info("Routing call to asterisk, cli=%s carrier=%s" % (e164, carrier))
-            KSR.hdr.append("P-Asserted-Identity: <sip:%s@openline.ai>\r\n"%e164)
-            return self.ksr_route_to_carrier(msg, carrier)
+            KSR.info("Routing call to asterisk, cli=%s carrier=%s" % (record['e164'], record['carrier']))
+            KSR.hdr.append("P-Asserted-Identity: <sip:%s@openline.ai>\r\n"%record['e164'])
+            return self.ksr_route_to_carrier(msg, record['carrier'])
         else:
             KSR.info("transfer: attempt local routing\n")
             KSR.pv.sets("$ru", dest)
@@ -348,8 +346,6 @@ class kamailio:
             return self.ksr_route_asterisk(msg)
         elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
             KSR.info("Number found, checking if PSTN is activated\n")
-            carrier = None
-            e164 = None
             KSR.info(
                 "Looking up %s in database\n" % (KSR.pv.gete("$fu")))
             record = self.kamailioDB.find_sipuri_mapping(KSR.pv.gete("$fu"))
@@ -357,7 +353,7 @@ class kamailio:
                 KSR.info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
-            KSR.info("Routing call to asterisk, cli=%s carrier=%s" % (e164, carrier))
+            KSR.info("Routing call to asterisk, cli=%s carrier=%s" % (record['e164'], record['carrier']))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: pstn\r\n")
             KSR.hdr.append("X-Openline-Dest-Carrier: " + record['carrier'] + "\r\n")
             KSR.hdr.append("X-Openline-CallerID: " + record['e164'] + "\r\n")
