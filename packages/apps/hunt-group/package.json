@@ -1,0 +1,24 @@
+{
+  "name": "twilio-findme",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:dev": "nodenv -f -e node src/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "node-dev": "^7.4.3",
+    "node-env-run": "^4.0.2",
+    "pg": "^8.8.0",
+    "twilio": "^3.83.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.30.0",
+    "eslint-config-google": "^0.14.0",
+    "jest": "^29.3.1"
+  }
+}
