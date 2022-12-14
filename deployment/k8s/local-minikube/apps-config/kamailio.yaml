@@ -34,6 +34,6 @@ spec:
             - name: SQL_DATABASE
               value: openline
             - name: SQL_HOST
-              value: postgresql-customer-os-dev.openline.svc.cluster.local
+              value: customer-db-postgresql.openline.svc.cluster.local
             - name: ASTERISK_HOST
               value: asterisk.openline.svc.cluster.local
