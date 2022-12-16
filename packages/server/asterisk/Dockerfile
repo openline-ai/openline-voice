@@ -1,4 +1,4 @@
-From ubuntu:jammy
+FROM ubuntu:jammy
 
 ARG opus_codec=asterisk-18.0/x86-64/codec_opus-18.0_current-x86_64
 RUN sh -c 'apt-get update && DEBIAN_FRONTEND=noninteractive apt install -y software-properties-common'
