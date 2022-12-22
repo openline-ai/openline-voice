@@ -12,8 +12,4 @@ COPY --from=deps /app/node_modules ./node_modules
 
 COPY . .
 
-EXPOSE 3006
-
-ENV PORT 3006
-
-RUN npm run-script "start"
+CMD ["node", "src/server.js"]
