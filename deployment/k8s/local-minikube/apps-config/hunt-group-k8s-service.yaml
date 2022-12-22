@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hunt-group-service
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 18015
+      targetPort: 18015
+  selector:
+    app: hunt-group

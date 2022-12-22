@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment                 # Type of Kubernetes resource
+metadata:
+  name: hunt-group           # Name of the Kubernetes resource
+spec:
+  replicas: 1                    # Number of pods to run at any given time
+  selector:
+    matchLabels:
+      app: hunt-group        # This deployment applies to any Pods matching the specified label
+  template:                      # This deployment will create a set of pods using the configurations in this template
+    metadata:
+      labels:                    # The labels that will be applied to all of the pods in this deployment
+        app: hunt-group
+    spec:                        # Spec for the container which will run in the Pod
+      containers:
+        - image: ghcr.io/openline-ai/openline-voice/hunt-group:latest
+          name: hunt-group
+          imagePullPolicy: Never
+          env:
+            - name: SERVER_PORT
+              value: "18015"
+            - name: CALL_TIMEOUT
+              value: "30"
+            - name: DB_USER
+              value: openline
+            - name: DB_PASSWORD
+              value: password
+            - name: DB_NAME
+              value: openline
+            - name: DB_HOST
+              value: customer-db-postgresql.openline.svc.cluster.local
+            - name: DB_PORT
+              value: "5432"
+            - name: SQL_POOL_MAX_CONN
+              value: "100"
+            - name: SQL_POOL_IDLE_TIMEOUT_MILLIS
+              value: "30000"
+            - name: SQL_POOL_CONNECTION_TIMEOUT_MILLIS
+              value: "2000"
