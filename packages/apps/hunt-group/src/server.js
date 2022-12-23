@@ -7,9 +7,7 @@ if (process.env.SERVER_PORT == null){
 }
 
 dbInit().catch(ex => {
-    console.log(process.env)
-    console.error('Failed to initialize database');
-    console.error(ex);
+    console.error('Failed to initialize database' + ex);
     process.exitCode = 1;
 })
 
