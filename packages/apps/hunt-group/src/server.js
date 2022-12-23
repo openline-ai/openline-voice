@@ -1,15 +1,9 @@
 const express = require('express')
-const {dbInit} = require('./dbInit')
 
 if (process.env.SERVER_PORT == null){
     console.error('Missing env variable: SERVER_PORT');
     process.exit(1);
 }
-
-dbInit().catch(ex => {
-    console.error('Failed to initialize database' + ex);
-    process.exitCode = 1;
-})
 
 const app = express()
 app.use(express.json());
@@ -20,7 +14,6 @@ app.use(
 );
 
 const {welcome, menu, dial} = require('./handler');
-const {fetch} = require("./fetch");
 
 // POST: /welcome
 app.post('/welcome', (req, res) => {
