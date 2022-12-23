@@ -10,7 +10,7 @@ const pool = new Pool({
     idleTimeoutMillis: process.env.SQL_POOL_MAX_IDLE_CONN,
     connectionTimeoutMillis: process.env.SQL_POOL_CONNECTIONTIMEOUTMILLIS,
 })
-
+console.log(pool)
 module.exports = {
     query: (text) => pool.query(text),
 }
