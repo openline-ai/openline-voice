@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS openline_hunt_group (
     priority NUMERIC NOT NULL
 );
 
-CREATE UNIQUE INDEX hunt_group_name_idx ON openline_hunt_group (name);
+CREATE UNIQUE INDEX IF NOT EXISTS hunt_group_name_idx ON openline_hunt_group (name);
+CREATE UNIQUE INDEX IF NOT EXISTS hunt_group_priority_idx ON openline_hunt_group (priority);
 
 CREATE TABLE IF NOT EXISTS openline_hunt_group_mapping (
     id SERIAL PRIMARY KEY NOT NULL,
