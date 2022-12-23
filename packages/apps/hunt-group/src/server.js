@@ -1,4 +1,5 @@
 const express = require('express')
+require('dotenv').config()
 
 if (process.env.SERVER_PORT == null){
     console.error('Missing env variable: SERVER_PORT');
