@@ -6,12 +6,8 @@
 	"forwardPorts": [3478],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": 
-		[ "curl http://openline.sh/install.sh | sh"
-		],
-	"postStartCommand": 
-		[ "docker run -d --network=host coturn/coturn -v -z -n -X $(hostname -I|cut -f1 -d ' ') -L 0.0.0.0 --min-port=10000 --max-port=20000"
-		],
+	"postCreateCommand": "curl http://openline.sh/install.sh | sh",
+	"postStartCommand": "docker run -d --network=host coturn/coturn -v -z -n -X $(hostname -I|cut -f1 -d ' ') -L 0.0.0.0 --min-port=10000 --max-port=20000",
 	// Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
 	"features": {
