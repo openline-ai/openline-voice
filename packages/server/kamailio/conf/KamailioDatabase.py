@@ -15,6 +15,7 @@ class KamailioDatabase:
             cur.execute('SELECT 1')
         except psycopg2.OperationalError:
             self.connection = psycopg2.connect(self.conn_string)
+            self.connection.set_session(autocommit=True)
 
     def lookup_carrier(self, carrier:str):
         self.test_connection()
