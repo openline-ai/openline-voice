@@ -1,4 +1,4 @@
-CREATE TABLE dispatcher (
+CREATE TABLE kamailio_dispatcher (
     id SERIAL PRIMARY KEY NOT NULL,
     setid INTEGER DEFAULT 0 NOT NULL,
     destination VARCHAR(192) DEFAULT '' NOT NULL,
@@ -8,5 +8,5 @@ CREATE TABLE dispatcher (
     description VARCHAR(64) DEFAULT '' NOT NULL
 );
 
-INSERT INTO version (table_name, table_version) values ('dispatcher','4');
+INSERT INTO version (table_name, table_version) values ('kamailio_dispatcher','4');
 
