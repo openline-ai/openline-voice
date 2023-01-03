@@ -11,7 +11,7 @@ class KamailioDatabase:
 
     def testConnection(self):
         try:
-            psycopg2.connection.isolation_level
+            self.connection.isolation_level
         except psycopg2.OperationalError as oe:
             self.connection = psycopg2.connect(self.conn_string)
 
