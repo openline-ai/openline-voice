@@ -26,9 +26,9 @@ class MyTestCase(unittest.TestCase):
         k = kamailio.kamailio()
         k.kamailioDB = TestKamailioDatabase.TestKamailioDatabase()
         k.ksr_request_route(None)
-        print(ksr_utils.registrations["location"][ksr_utils.pvar_get("$fu")])
+        print(ksr_utils.registrations["kamailio_location"][ksr_utils.pvar_get("$fu")])
         print(ksr_utils.pvar_get("$ct"))
-        self.assertEqual(ksr_utils.registrations["location"][ksr_utils.pvar_get("$fu")], ksr_utils.pvar_get("$ct"))  # add assertion here
+        self.assertEqual(ksr_utils.registrations["kamailio_location"][ksr_utils.pvar_get("$fu")], ksr_utils.pvar_get("$ct"))  # add assertion here
 
 
     def test_INVITE_from_webrtc_to_webrtc(self):
@@ -49,7 +49,7 @@ class MyTestCase(unittest.TestCase):
 
         KSR._mock_data["tm"]["t_relay"] = my_relay
         #simulate a registration in the location db
-        ksr_utils.registrations["location"][ksr_utils.pvar_get("$ru")] = "<sip:10.0.0.1:9999>;expires=6000"
+        ksr_utils.registrations["kamailio_location"][ksr_utils.pvar_get("$ru")] = "<sip:10.0.0.1:9999>;expires=6000"
 
         #indicate the call is not from a carrier ip address
         KSR._mock_data["permissions"]["allow_source_address"] = 0
@@ -247,7 +247,7 @@ class MyTestCase(unittest.TestCase):
         ksr_utils.hdr_append("X-Openline-UUID: my uuid\r\n")
         ksr_utils.hdr_append("X-Openline-Dest: sip:dev@agent.openline.ai\r\n")
         ksr_utils.hdr_append("Referred-By: <sip:AgentSmith@agent.openline.ai>\r\n")
-        ksr_utils.registrations["location"]["sip:dev@agent.openline.ai"] = "sip:10.0.0.1:9999"
+        ksr_utils.registrations["kamailio_location"]["sip:dev@agent.openline.ai"] = "sip:10.0.0.1:9999"
 
         ksr_relay_called = False
         ksr_on_failure_called = False
@@ -353,7 +353,7 @@ class MyTestCase(unittest.TestCase):
         ksr_utils.hdr_append("X-Openline-UUID: my uuid\r\n")
         ksr_utils.hdr_append("X-Openline-Dest: sip:AgentSmit@agent.openline.ai\r\n")
         ksr_utils.hdr_append("X-Openline-Origin-Carrier: test_carrier\r\n")
-        ksr_utils.registrations["location"]["sip:AgentSmit@agent.openline.ai"] = "sip:10.0.0.1:9999"
+        ksr_utils.registrations["kamailio_location"]["sip:AgentSmit@agent.openline.ai"] = "sip:10.0.0.1:9999"
 
         ksr_relay_called = False
 

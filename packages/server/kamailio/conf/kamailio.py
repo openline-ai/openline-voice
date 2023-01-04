@@ -17,6 +17,8 @@ import uuid
 import configparser
 import KamailioDatabase
 
+LOCATION = "kamailio_location"
+
 # global variables corresponding to defined values (e.g., flags) in kamailio.cfg
 FLT_ACC=1
 FLT_ACCMISSED=2
@@ -246,13 +248,13 @@ class kamailio:
     def ksr_route_registrar(self, msg):
         if not KSR.is_REGISTER():
             return 1
-        KSR.registrar.unregister("location", KSR.pv.get("$fu"))
+        KSR.registrar.unregister(LOCATION, KSR.pv.get("$fu"))
         if KSR.isflagset(FLT_NATS) :
             KSR.setbflag(FLB_NATB)
             # do SIP NAT pinging
             KSR.setbflag(FLB_NATSIPPING)
 
-        if KSR.registrar.save("location", 0) < 0:
+        if KSR.registrar.save(LOCATION, 0) < 0:
             KSR.sl.sl_reply_error()
 
         return -255
@@ -260,7 +262,7 @@ class kamailio:
 
     # User location service
     def ksr_route_location(self, msg):
-        rc = KSR.registrar.lookup("location")
+        rc = KSR.registrar.lookup(LOCATION)
         if rc < 0:
             KSR.tm.t_newtran()
             if rc == -1 or rc == -3:
@@ -348,7 +350,7 @@ class kamailio:
         if KSR.pv.gete("$rU") == "echo":
             #route to echo test
             return self.ksr_route_asterisk(msg)
-        elif KSR.registrar.registered("location") > 0:
+        elif KSR.registrar.registered(LOCATION) > 0:
             KSR.info("Destination %s is WEBRTC\n" % (KSR.pv.get("$ru")))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: webrtc\r\n")
             return self.ksr_route_asterisk(msg)
@@ -539,10 +541,13 @@ class kamailio:
         KSR.xhttp.xhttp_reply(200, "Ping", "text/plain", "hello world")
         return 1
 
-    def ksr_rtimer_address_reload(self, msg, evname):
+    def ksr_rtimer_reload(self, msg, evname):
         KSR.info("reloading address table\n")
         KSR.jsonrpcs.exec('{"jsonrpc": "2.0", "method": "permissions.addressReload", "id": 1}')
         KSR.info("reload address result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
+        KSR.info("reloading dispatcher table\n")
+        KSR.jsonrpcs.exec('{"jsonrpc": "2.0", "method": "dispatcher.reload", "id": 2}')
+        KSR.info("reload dispatcher result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
         return 1
 
     def ksr_websocket_event(self, msg, evname):

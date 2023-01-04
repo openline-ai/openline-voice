@@ -3,7 +3,7 @@ import re
 pvar_vals = {}
 hdr_vals = {}
 
-registrations = {"location": {}}
+registrations = {"kamailio_location": {}}
 
 
 def ksr_utils_init(_mock_data):
@@ -13,7 +13,7 @@ def ksr_utils_init(_mock_data):
 
     pvar_vals = {}
     hdr_vals = {}
-    registrations["location"] = {}
+    registrations["kamailio_location"] = {}
 
     _mock_data['pv']['get'] = pvar_get
     _mock_data['pv']['getw'] = pvar_getw
