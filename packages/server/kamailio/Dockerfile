@@ -15,7 +15,7 @@ COPY conf/kamailio.py /etc/kamailio/
 COPY conf/KamailioDatabase.py /etc/kamailio/
 COPY conf/network.conf.template /etc/kamailio/
 COPY docker_entry.sh /
-COPY scripts/genconf.sh /etc/kamailio/
+COPY scripts/genconf.py /etc/kamailio/
 COPY scripts/kamailio_network_setup.sh /usr/sbin/
 
 
