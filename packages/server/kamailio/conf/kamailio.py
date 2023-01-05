@@ -124,7 +124,7 @@ class kamailio:
         #INVITE forwarded from one kamailio to the other
         if KSR.pv.get("$Rp") == 5090 and KSR.registrar.registered(LOCATION) > 0:
             return self.ksr_route_location(msg)
-        
+
         #Everything after this point should be WEBRTC
         if not KSR.is_WS():
             KSR.sl.sl_send_reply(403, "Request Not Allowed")
