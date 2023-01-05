@@ -32,4 +32,7 @@ context=openline-pstn
 disallow=all
 allow=alaw,ulaw
 
-
+[dispatcher]
+type=endpoint
+context=default
+identify_by=username
