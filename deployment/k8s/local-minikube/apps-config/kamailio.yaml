@@ -37,3 +37,7 @@ spec:
               value: customer-db-postgresql.openline.svc.cluster.local
             - name: ASTERISK_HOST
               value: asterisk.openline.svc.cluster.local
+            - name: DMQ_DOMAIN
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
