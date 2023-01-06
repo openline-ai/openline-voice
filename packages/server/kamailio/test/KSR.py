@@ -6657,6 +6657,148 @@ class Permissions:
 			return node()
 		return node
 
+class Dmq:
+	def handle_message(self) -> int:
+		print("Calling %s" % ("dmq.handle_message"))
+		if "handle_message" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['handle_message']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def handle_message_rc(self, param0: int) -> int:
+		print("Calling %s, %s" % ("dmq.handle_message_rc", param0))
+		if "handle_message_rc" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['handle_message_rc']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def process_message(self) -> int:
+		print("Calling %s" % ("dmq.process_message"))
+		if "process_message" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['process_message']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def process_message_rc(self, param0: int) -> int:
+		print("Calling %s, %s" % ("dmq.process_message_rc", param0))
+		if "process_message_rc" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['process_message_rc']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def is_from_node(self) -> int:
+		print("Calling %s" % ("dmq.is_from_node"))
+		if "is_from_node" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['is_from_node']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def t_replicate(self) -> int:
+		print("Calling %s" % ("dmq.t_replicate"))
+		if "t_replicate" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['t_replicate']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def t_replicate_mode(self, param0: int) -> int:
+		print("Calling %s, %s" % ("dmq.t_replicate_mode", param0))
+		if "t_replicate_mode" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['t_replicate_mode']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def send_message(self, param0: str, param1: str, param2: str, param3: str) -> int:
+		print("Calling %s, %s, %s, %s, %s" % ("dmq.send_message", param0, param1, param2, param3))
+		if "send_message" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['send_message']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2, param3)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param3) in node:
+			node = node[str(param3)]
+		else:
+			return 1
+		return node
+
+	def bcast_message(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("dmq.bcast_message", param0, param1, param2))
+		if "bcast_message" not in _mock_data['dmq']:
+			return 1
+		node = _mock_data['dmq']['bcast_message']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
 
 def dbg(param0: str):
 	print("Calling %s, %s" % ("dbg", param0))
@@ -7711,6 +7853,7 @@ auth_ephemeral = Auth_ephemeral()
 dispatcher = Dispatcher()
 uac = Uac()
 permissions = Permissions()
+dmq = Dmq()
 
 _mock_data[''] = {}
 _mock_data['pv'] = {}
@@ -7739,3 +7882,4 @@ _mock_data['auth_ephemeral'] = {}
 _mock_data['dispatcher'] = {}
 _mock_data['uac'] = {}
 _mock_data['permissions'] = {}
+_mock_data['dmq'] = {}

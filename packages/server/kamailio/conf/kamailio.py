@@ -66,6 +66,10 @@ class kamailio:
             KSR.sl.send_reply(403, "Forbidden")
             return 0
 
+        if KSR.is_KDMQ() and KSR.pv.get("$Rp") == 5090:
+            KSR.dmq.handle_message()
+            return 1
+
         # per request initial checks
         if self.ksr_route_reqinit(msg)==-255 :
             return 1
@@ -117,9 +121,13 @@ class kamailio:
             self.ksr_route_from_asterisk(msg)
             return 1
 
+        #INVITE forwarded from one kamailio to the other
+        if KSR.pv.get("$Rp") == 5090 and KSR.registrar.registered(LOCATION) > 0:
+            return self.ksr_route_location(msg)
+
         #Everything after this point should be WEBRTC
         if not KSR.is_WS():
-            KSR.sl.sl_send_reply(500, "Request Not Supported")
+            KSR.sl.sl_send_reply(403, "Request Not Allowed")
             return 1
 
         # check if it is an authenticated
@@ -262,6 +270,8 @@ class kamailio:
 
     # User location service
     def ksr_route_location(self, msg):
+        orig_ruri = KSR.pv.gete("$ru")
+
         rc = KSR.registrar.lookup(LOCATION)
         if rc < 0:
             KSR.tm.t_newtran()
@@ -271,6 +281,16 @@ class kamailio:
             elif rc == -2:
                 KSR.tm.t_send_reply(405, "Method Not Allowed")
                 return -255
+
+        home_ip = KSR.pv.gete("$(xavp(ulrcd[0]=>received){uri.param,home})")
+        home_uri = "sip:" + KSR.pv.gete("$(xavp(ulrcd[0]=>received){uri.param,home})")
+
+        KSR.info("Checking if " + home_uri + " is local\n")
+        if not KSR.is_myself(home_uri):
+            KSR.info(home_uri + " is not local routing to home\n")
+            KSR.pv.sets("$ru", orig_ruri)
+            KSR.tm.t_relay_to_proto_addr("udp", home_ip, 5090)
+            return -255
 
         # when routing via usrloc, log the missed calls also
         if KSR.is_INVITE():
@@ -392,7 +412,7 @@ class kamailio:
 
         KSR.hdr.append("X-Openline-Origin-Carrier: " + KSR.pv.gete("$avp(carrier)") + "\r\n")
         KSR.pv.sets("$ru", result['sipuri'])
-        KSR.info("Routing call to %s\n" + result['sipuri'])
+        KSR.info("Routing call to %s\n" % result['sipuri'])
         return self.ksr_route_asterisk(msg)
 
     def ksr_route_asterisk(self, msg):
@@ -423,6 +443,8 @@ class kamailio:
         if KSR.nathelper.nat_uac_test(65)>0 :
             if KSR.is_REGISTER() :
                 KSR.nathelper.fix_nated_register()
+                KSR.pv.sets("$avp(RECEIVED)", KSR.pv.gete("$avp(RECEIVED)") + ";home="+ KSR.pv.gete("$Ri"))
+                KSR.info("Set RECEIVED to " + KSR.pv.gete("$avp(RECEIVED)") + "\n")
             elif KSR.siputils.is_first_hop()>0 :
                 KSR.nathelper.set_contact_alias()
 

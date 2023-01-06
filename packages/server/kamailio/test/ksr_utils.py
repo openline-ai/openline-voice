@@ -13,13 +13,20 @@ def ksr_utils_init(_mock_data):
 
     pvar_vals = {}
     hdr_vals = {}
+
     registrations["kamailio_location"] = {}
+
+    _mock_data[''] = {}
+    _mock_data['tm'] = {}
+    _mock_data['dispatcher'] = {}
+    _mock_data['permissions'] = {}
 
     _mock_data['pv']['get'] = pvar_get
     _mock_data['pv']['getw'] = pvar_getw
     _mock_data['pv']['gete'] = pvar_gete
     _mock_data['pv']['sets'] = pvar_set
     _mock_data['']['is_INVITE'] = is_invite
+    _mock_data['']['is_KDMQ'] = is_kdmq
     _mock_data['']['is_ACK'] = is_ack
     _mock_data['']['is_BYE'] = is_bye
     _mock_data['']['is_CANCEL'] = is_cancel
@@ -40,6 +47,7 @@ def ksr_utils_init(_mock_data):
     _mock_data['hdr']['append'] = hdr_append
     _mock_data['hdr']['remove'] = hdr_remove
     _mock_data['dispatcher']['ds_select_dst'] = dispatcher_select_dst
+    _mock_data['nathelper']['fix_nated_register'] = fix_nated_register
 
 def dispatcher_select_dst(group: int, algo: int):
     pvar_set("$nh(u)", "sip:dispatcher_group_" + str(group))
@@ -86,6 +94,7 @@ def location_lookup(table: str):
         return -1
 
     pvar_set("$ru", registrations[table][pvar_get("$ru")])
+    pvar_set("$xavp(ulrcd[0]=>received)", "sip:10.0.0.1;transport=ws;home=127.0.0.1")
     return 1
 
 def location_registered(table: str):
@@ -118,6 +127,19 @@ def get_domain(uri: str):
         return result.group(3)
     print("Parse error for uri (%s)\n" % (uri))
     assert(False)
+def get_param(uri: str, param: str):
+    print("Looking for param %s in uri %s\n" % (param, uri))
+    result = re.search(SIPURI_REGEX, uri)
+    if result is None:
+        print("Parse error for uri (%s)\n" % (uri))
+        assert (False)
+    param_list = result.group(4)
+    print("Param list of %s\n" % param_list)
+    result = re.search(";%s=([^;]+)" % param, param_list)
+    if result is None:
+        print("parameter (%s) not found\n" % (param))
+        return ""
+    return result[1]
 
 def get_user(uri: str):
     result = re.search(SIPURI_REGEX, uri)
@@ -180,6 +202,10 @@ def get_special_pvar(key):
                 return result.group(1)
             else:
                 return key
+        if re.search("{uri.param,([^}]+)}$", text_op) is not None:
+            result = re.search("{uri.param,([^}]+)}$", text_op)
+            uri = pvar_get("$(%s)"% text_op[:-len(result.group(0))])
+            return get_param(uri, result.group(1))
         else:
             key = pvar_get("$%s"% text_op)
             return key
@@ -240,6 +266,10 @@ def is_invite():
         return True
     return False
 
+def is_kdmq():
+    if pvar_get("$rm") == "KDMQ":
+        return True
+    return False
 
 def is_ack():
     if pvar_get("$rm") == "ACK":
@@ -288,6 +318,10 @@ def is_method_in(vmethod: str):
     else:
         return True
 
+
+def fix_nated_register() -> int:
+    pvar_set("$avp(RECEIVED)", "sip:10.0.0.1;transport=ws")
+    return 1
 
 def is_WS():
     if pvar_get("$Rp") == 8080:

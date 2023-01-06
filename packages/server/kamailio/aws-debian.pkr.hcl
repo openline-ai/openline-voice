@@ -28,6 +28,11 @@ data "amazon-parameterstore" "db_password" {
   with_decryption = true
 }
 
+data "amazon-parameterstore" "dmq_domain" {
+  name = "/config/kamailio-server_${var.environment}/dmq_domain"
+  with_decryption = false
+}
+
 # usage example of the data source output
 locals {
   auth_secret   = data.amazon-parameterstore.auth_secret.value
@@ -35,6 +40,7 @@ locals {
   db_database   = data.amazon-parameterstore.db_database.value
   db_host   = data.amazon-parameterstore.db_host.value
   db_password   = data.amazon-parameterstore.db_password.value
+  dmq_domain  = data.amazon-parameterstore.dmq_domain.value
 }
 
 packer {
@@ -97,7 +103,7 @@ build {
       "sudo sh -c 'mv /tmp/kamailio/scripts/kamailio_network_setup.sh /usr/sbin/'",
       "sudo sh -c 'mv /tmp/kamailio/scripts/kamailio.service /lib/systemd/system/'",
       "sudo sh -c 'chown kamailio:kamailio /etc/kamailio/'",
-      "sudo sh -c 'AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" /etc/kamailio/genconf.py'",
+      "sudo sh -c 'DMQ_DOMAIN=\"${local.dmq_domain}\" AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" /etc/kamailio/genconf.py'",
       "sudo sh -c 'touch /etc/kamailio/dispatcher.list'",
     ]
   }
