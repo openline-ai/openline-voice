@@ -17,6 +17,7 @@ class MyTestCase(unittest.TestCase):
         ksr_utils.pvar_set("$fu", "sip:test@openline.ai")
         ksr_utils.pvar_set("$ct", "<sip:10.0.0.1:9999>;expires=6000")
         ksr_utils.pvar_set("$Rp", 8080)
+        ksr_utils.pvar_set("$Ri", "1.2.3.4")
 
         #indicate the call is not from a carrier ip address
         KSR._mock_data["permissions"]["allow_source_address"] = 0
@@ -29,6 +30,7 @@ class MyTestCase(unittest.TestCase):
         print(ksr_utils.registrations["kamailio_location"][ksr_utils.pvar_get("$fu")])
         print(ksr_utils.pvar_get("$ct"))
         self.assertEqual(ksr_utils.registrations["kamailio_location"][ksr_utils.pvar_get("$fu")], ksr_utils.pvar_get("$ct"))  # add assertion here
+        self.assertEqual(ksr_utils.pvar_get("$(avp(RECEIVED){uri.param,home})"), "1.2.3.4")
 
 
     def test_INVITE_from_webrtc_to_webrtc(self):
@@ -380,6 +382,90 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:10.0.0.1:9999",
                          "RURI not set to expected destination")  # add assertion here
         self.assertTrue(ksr_relay_called, "Call was not routed!")
+
+    def test_INVITE_from_kamailio_to_webrtc(self):
+        ksr_utils.pvar_set("$rm", "INVITE")
+        ksr_utils.pvar_set("$ru", "sip:AgentSmit@agent.openline.ai")
+        ksr_utils.pvar_set("$fu", "sip:+44075755588858@agent.openline.ai")
+        ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
+        ksr_utils.pvar_set("$Rp", 5090)
+        ksr_utils.hdr_append("X-Openline-UUID: my uuid\r\n")
+       # ksr_utils.hdr_append("X-Openline-Dest: sip:AgentSmit@agent.openline.ai\r\n")
+       # ksr_utils.hdr_append("X-Openline-Origin-Carrier: test_carrier\r\n")
+        ksr_utils.registrations["kamailio_location"]["sip:AgentSmit@agent.openline.ai"] = "sip:10.0.0.1:9999"
+
+        ksr_relay_called = False
+
+        def my_relay():
+            nonlocal ksr_relay_called
+            print("Inside t_relay()\n")
+            ksr_relay_called = True
+            return 1
+
+        KSR._mock_data["tm"]["t_relay"] = my_relay
+        # do not register in location db
+
+        # indicate the call is not from a carrier ip address
+        KSR._mock_data["permissions"]["allow_source_address"] = 0
+        # indicate the call is not coming from an asterisk ip
+        KSR._mock_data["dispatcher"]["ds_is_from_list"] = 0
+
+        k = kamailio.kamailio()
+        k.kamailioDB = TestKamailioDatabase.TestKamailioDatabase()
+
+
+        k.ksr_request_route(None)
+
+        self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:10.0.0.1:9999",
+                         "RURI not set to expected destination")  # add assertion here
+        self.assertTrue(ksr_relay_called, "Call was not routed!")
+
+    def test_INVITE_from_asterisk_to_webrtc_non_local(self):
+        ksr_utils.pvar_set("$rm", "INVITE")
+        ksr_utils.pvar_set("$ru", "sip:127.0.0.1")
+        ksr_utils.pvar_set("$fu", "sip:+44075755588858@agent.openline.ai")
+        ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
+        ksr_utils.pvar_set("$Rp", 5060)
+        ksr_utils.hdr_append("X-Openline-UUID: my uuid\r\n")
+        ksr_utils.hdr_append("X-Openline-Dest: sip:AgentSmit@agent.openline.ai\r\n")
+        ksr_utils.hdr_append("X-Openline-Origin-Carrier: test_carrier\r\n")
+        ksr_utils.registrations["kamailio_location"]["sip:AgentSmit@agent.openline.ai"] = "sip:10.0.0.1:9999"
+
+        ksr_relay_called = False
+        ksr_relay_destination = ""
+        ksr_relay_port = 0
+
+
+        def t_relay_to_proto_addr(proto: str, ip: str, port: int) -> int:
+            nonlocal ksr_relay_called
+            nonlocal ksr_relay_destination
+            nonlocal ksr_relay_port
+            print("Inside t_relay_to_proto_addr()\n")
+            ksr_relay_called = True
+            ksr_relay_destination = ip
+            ksr_relay_port = port
+            return 1
+
+        KSR._mock_data["tm"]["t_relay_to_proto_addr"] = t_relay_to_proto_addr
+
+        # indicate the call is not from a carrier ip address
+        KSR._mock_data["permissions"]["allow_source_address"] = 0
+        # indicate the call is coming from an asterisk ip
+        KSR._mock_data["dispatcher"]["ds_is_from_list"] = 1
+        # indicate that the ip found in the home parameter is not local
+        KSR._mock_data[""]["is_myself"] = False
+
+        k = kamailio.kamailio()
+        k.kamailioDB = TestKamailioDatabase.TestKamailioDatabase()
+
+
+        k.ksr_request_route(None)
+
+        self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:AgentSmit@agent.openline.ai",
+                         "RURI not set to expected destination")  # add assertion here
+        self.assertTrue(ksr_relay_called, "Call was not routed!")
+        self.assertEqual(ksr_relay_destination, "127.0.0.1", "Call routed to wrong destination ip")
+        self.assertEqual(ksr_relay_port, 5090, "Call routed to wrong destination port")
 
 
 if __name__ == '__main__':
