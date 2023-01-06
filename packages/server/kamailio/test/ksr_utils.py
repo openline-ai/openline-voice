@@ -13,7 +13,13 @@ def ksr_utils_init(_mock_data):
 
     pvar_vals = {}
     hdr_vals = {}
+
     registrations["kamailio_location"] = {}
+
+    _mock_data[''] = {}
+    _mock_data['tm'] = {}
+    _mock_data['dispatcher'] = {}
+    _mock_data['permissions'] = {}
 
     _mock_data['pv']['get'] = pvar_get
     _mock_data['pv']['getw'] = pvar_getw
