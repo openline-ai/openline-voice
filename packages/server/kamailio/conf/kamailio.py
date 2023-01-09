@@ -285,10 +285,13 @@ class kamailio:
         home_ip = KSR.pv.gete("$(xavp(ulrcd[0]=>received){uri.param,home})")
         home_uri = "sip:" + KSR.pv.gete("$(xavp(ulrcd[0]=>received){uri.param,home})")
 
+        KSR.tm.t_newtran()
+
         KSR.info("Checking if " + home_uri + " is local\n")
         if not KSR.is_myself(home_uri):
             KSR.info(home_uri + " is not local routing to home\n")
             KSR.pv.sets("$ru", orig_ruri)
+            KSR.pv.sets("$fsn", "internal")
             KSR.tm.t_relay_to_proto_addr("udp", home_ip, 5090)
             return -255
 
@@ -573,6 +576,13 @@ class kamailio:
         return 1
 
     def ksr_websocket_event(self, msg, evname):
+        return 1
+
+    def ksr_dispatcher_event(self, msg, evname):
+        if evname == "dispatcher:dst-down":
+            KSR.err("Node down! (node=%s)\n" %(KSR.pv.gete("$ru")))
+        else:
+            KSR.err("Node Up! (node=%s)\n" % (KSR.pv.gete("$ru")))
         return 1
 
 

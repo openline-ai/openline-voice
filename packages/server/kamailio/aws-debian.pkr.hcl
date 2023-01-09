@@ -105,6 +105,8 @@ build {
       "sudo sh -c 'chown kamailio:kamailio /etc/kamailio/'",
       "sudo sh -c 'DMQ_DOMAIN=\"${local.dmq_domain}\" AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" /etc/kamailio/genconf.py'",
       "sudo sh -c 'touch /etc/kamailio/dispatcher.list'",
+      "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
+      "sudo sh -c 'cd /tmp/; ./awslogs-agent-setup.py -r eu-west-2 -n -c /etc/kamailio/awslogs.conf; rm /etc/kamailio/awslogs.conf'",
     ]
   }
 }
