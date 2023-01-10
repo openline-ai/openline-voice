@@ -34,12 +34,13 @@ class KamailioDatabase:
         self.test_connection()
         with self.connection.cursor() as cur:
 
-            cur.execute("SELECT e164, carrier_name FROM openline_number_mapping WHERE sipuri=%s",
+            cur.execute("SELECT e164, alias, carrier_name FROM openline_number_mapping WHERE sipuri=%s",
                         (sipuri,))
             record = cur.fetchone()
             if record is not None:
                 return {"e164": record[0],
-                        "carrier": record[1]
+                        "alias": record[1],
+                        "carrier": record[2]
                         }
         return None
 
