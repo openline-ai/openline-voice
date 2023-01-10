@@ -449,6 +449,7 @@ class kamailio:
             KSR.tm.t_send_reply(503, "No Media Servers Available")
             return -255
 
+        self.log_info("Routing call to asterisk (%s)\n"%(KSR.pv.gete("$nh(d)")))
         self.ksr_route_relay(msg)
         return 1
 

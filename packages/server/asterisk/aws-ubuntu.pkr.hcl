@@ -35,7 +35,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo sh -c 'add-apt-repository universe && apt-get update'",
-      "sudo sh -c 'apt-get install -y asterisk sox'",
+      "sudo sh -c 'apt-get install -y asterisk sox python2'",
       "sudo sh -c 'mkdir -p /usr/src/codecs/opus'",
       "sudo sh -c 'cd /usr/src/codecs/opus && curl -sL http://downloads.digium.com/pub/telephony/codec_opus/${local.opus_codec}.tar.gz | tar --strip-components 1 -xz'",
       "sudo sh -c 'cp /usr/src/codecs/opus/*.so /usr/lib/x86_64-linux-gnu/asterisk/modules/'",
@@ -53,6 +53,10 @@ build {
 	source = "scripts"
 	destination = "/tmp/asterisk/"
   }
+  provisioner "file" { 
+	source = "awslogs"
+	destination = "/tmp/asterisk/"
+  }
   provisioner "shell" {
     inline = [
       "sudo sh -c 'cp -v /tmp/asterisk/conf/* /etc/asterisk/'",
@@ -60,6 +64,8 @@ build {
       "sudo sh -c 'chmod a+x /tmp/asterisk/scripts/asterisk_network_setup.sh'",
       "sudo sh -c 'mv /tmp/asterisk/scripts/asterisk.service /etc/systemd/system'",
       "sudo sh -c 'chmod 644 /etc/systemd/system/asterisk.service'",
+      "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
+      "sudo sh -c 'cd /tmp/; python2 ./awslogs-agent-setup.py -r eu-west-2 -n -c /tmp/asterisk/awslogs/awslogs.conf'",
     ]
   }
 }
