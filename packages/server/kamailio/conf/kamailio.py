@@ -115,7 +115,7 @@ class kamailio:
         if  not KSR.is_WS() and KSR.permissions.allow_source_address(1) > 0:
             return self.ksr_route_from_carrier(msg)
 
-
+        KSR.pv.sets("$avp(uuid)", KSR.hdr.gete("X-Openline-UUID"))
         #check if call is from asterisk
         if KSR.dispatcher.ds_is_from_list(0) > 0:
             self.ksr_route_from_asterisk(msg)
@@ -123,6 +123,7 @@ class kamailio:
 
         #INVITE forwarded from one kamailio to the other
         if KSR.pv.get("$Rp") == 5090 and KSR.registrar.registered(LOCATION) > 0:
+            self.log_info("Call from Kamailio, attempting to route to local WebRTC user")
             return self.ksr_route_location(msg)
 
         #Everything after this point should be WEBRTC
@@ -287,9 +288,9 @@ class kamailio:
 
         KSR.tm.t_newtran()
 
-        KSR.info("Checking if " + home_uri + " is local\n")
+        self.log_info("Checking if " + home_uri + " is local\n")
         if not KSR.is_myself(home_uri):
-            KSR.info(home_uri + " is not local routing to home\n")
+            self.log_info(home_uri + " is not local routing to home\n")
             KSR.pv.sets("$ru", orig_ruri)
             KSR.pv.sets("$fsn", "internal")
             KSR.tm.t_relay_to_proto_addr("udp", home_ip, 5090)
@@ -299,67 +300,70 @@ class kamailio:
         if KSR.is_INVITE():
             KSR.setflag(FLT_ACCMISSED)
 
+        self.cleanup_headers(msg)
+
         self.ksr_route_relay(msg)
         return -255
 
     def ksr_route_to_carrier(self, msg, carrier):
-        KSR.info("Looking up details for carrier %s\n" % (carrier))
+        self.log_info("Looking up details for carrier %s\n" % (carrier))
 
         result = self.kamailioDB.lookup_carrier(carrier)
         if result is None:
-            KSR.info("carrier not found, rejecting the call\n")
+            self.log_info("carrier not found, rejecting the call\n")
             KSR.tm.t_send_reply(401, "Carrier Not Found")
             return -255
 
-        KSR.info("Routing call to %s\n"% (result['domain']))
+        self.log_info("Routing call to %s\n"% (result['domain']))
         KSR.pv.sets("$ru", KSR.pv.gete("$hdr(X-Openline-Dest)"))
         KSR.pv.sets("$rd", result['domain'])
         KSR.pv.sets("$avp(auser)", result['username'])
         KSR.pv.sets("$avp(apass)", result['ha1'])
         KSR.tm.t_on_failure("ksr_failure_trunk_auth")
+        self.cleanup_headers(msg)
         return self.ksr_route_relay(msg)
 
     def ksr_route_transfer_invite(self, msg):
-        KSR.info("Routing call transfer invite\n")
+        self.log_info("Routing call transfer invite\n")
         dest = KSR.pv.gete("$hdr(X-Openline-Dest)")
         user = KSR.pv.gete("$(hdr(X-Openline-Dest){uri.user})")
         source = KSR.pv.get("$(hdr(Referred-By){nameaddr.uri})")
-        KSR.info("ksr_route_transfer_invite: dest=%s user=%s source=%s\n" % (dest, user, source))
+        self.log_info("ksr_route_transfer_invite: dest=%s user=%s source=%s\n" % (dest, user, source))
 
         if re.search("^[+]?[0-9]+$", user) is not None:
-            KSR.info("Number found, checking if PSTN is activated\n")
-            KSR.info(
+            self.log_info("Number found, checking if PSTN is activated\n")
+            self.log_info(
                 "Looking up %s in database\n" % (source))
             record = self.kamailioDB.find_sipuri_mapping(source)
             if record is None:
-                KSR.info("PSTN Not activated, rejecting the call\n")
+                self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
-            KSR.info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
+            self.log_info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
             KSR.pv.sets("$fU", record['e164'])
             return self.ksr_route_to_carrier(msg, record['carrier'])
         else:
-            KSR.info("transfer: attempt local routing\n")
+            self.log_info("transfer: attempt local routing\n")
             KSR.pv.sets("$ru", dest)
             self.ksr_route_location(msg)
             return 1
         return 1
 
     def ksr_route_from_asterisk(self, msg):
-        KSR.info("Routing from asterisk\n")
+        self.log_info("Routing from asterisk\n")
         if KSR.pv.get("$hdr(Referred-By)") is not None:
             return self.ksr_route_transfer_invite(msg)
 
         if KSR.pv.get("$hdr(X-Openline-Origin-Carrier)") is not None:
-            KSR.info("From pstn flow, routing to local user\n")
+            self.log_info("From pstn flow, routing to local user\n")
             KSR.pv.sets("$ru", KSR.pv.gete("$hdr(X-Openline-Dest)"))
             self.ksr_route_location(msg)
             return 1
         elif KSR.pv.get("$hdr(X-Openline-Dest-Carrier)") is not None:
-            KSR.info("From webrtc to pstn flow, routing to carrier\n")
+            self.log_info("From webrtc to pstn flow, routing to carrier\n")
             return self.ksr_route_to_carrier(msg, KSR.pv.gete("$hdr(X-Openline-Dest-Carrier)"))
         else:
-            KSR.info("From webrtc to webrtc flow, routing to local user\n")
+            self.log_info("From webrtc to webrtc flow, routing to local user\n")
             KSR.pv.sets("$ru", KSR.pv.gete("$hdr(X-Openline-Dest)"))
             self.ksr_route_location(msg)
             return 1
@@ -369,30 +373,37 @@ class kamailio:
 
     # got a call from the webrtc, check if destination is pstn or webrtc and route to asterisk
     def ksr_route_from_webrtc(self, msg):
+
+        KSR.pv.sets("$avp(uuid)", str(uuid.uuid4()))
+        self.log_info("From WebRTC: Assigning call a UUID callid=%s from=%s to=%s\n" %(KSR.pv.gete("$ci"), KSR.pv.gete("$fu"), KSR.pv.gete("$tU")))
+
+        KSR.hdr.remove("X-Openline-UUID")
+        KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$avp(uuid)") + "\r\n")
+
         KSR.tm.t_newtran()
         if KSR.pv.gete("$rU") == "echo":
             #route to echo test
             return self.ksr_route_asterisk(msg)
         elif KSR.registrar.registered(LOCATION) > 0:
-            KSR.info("Destination %s is WEBRTC\n" % (KSR.pv.get("$ru")))
+            self.log_info("Destination %s is WEBRTC\n" % (KSR.pv.get("$ru")))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: webrtc\r\n")
             return self.ksr_route_asterisk(msg)
         elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
-            KSR.info("Number found, checking if PSTN is activated\n")
-            KSR.info(
+            self.log_info("Number found, checking if PSTN is activated\n")
+            self.log_info(
                 "Looking up %s in database\n" % (KSR.pv.gete("$fu")))
             record = self.kamailioDB.find_sipuri_mapping(KSR.pv.gete("$fu"))
             if record is  None:
-                KSR.info("PSTN Not activated, rejecting the call\n")
+                self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
-            KSR.info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
+            self.log_info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: pstn\r\n")
             KSR.hdr.append("X-Openline-Dest-Carrier: " + record['carrier'] + "\r\n")
             KSR.hdr.append("X-Openline-CallerID: " + record['e164'] + "\r\n")
             return self.ksr_route_asterisk(msg)
         else:
-            KSR.info("Destination not a number nor is registered")
+            self.log_info("Destination not a number nor is registered")
             KSR.tm.t_send_reply(404, "Destination Not Found")
             return -255
 
@@ -401,28 +412,30 @@ class kamailio:
     # got a call from the carrier, add the carrier ID and route to asterisk
     def ksr_route_from_carrier(self, msg):
         sipuri = None
+        KSR.pv.sets("$avp(uuid)", str(uuid.uuid4()))
+        self.log_info("From Carrier: Assigning call a UUID callid=%s from=%s to=%s\n" %(KSR.pv.gete("$ci"), KSR.pv.gete("$fU"), KSR.pv.gete("$tU")))
+        KSR.hdr.remove("X-Openline-UUID")
+        KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$avp(uuid)") + "\r\n")
 
         KSR.tm.t_newtran()
 
-        KSR.info("Looking up %s for carrier %s in database\n" % (KSR.pv.gete("$rU"), KSR.pv.gete("$avp(carrier)")))
+        self.log_info("Looking up %s for carrier %s in database\n" % (KSR.pv.gete("$rU"), KSR.pv.gete("$avp(carrier)")))
         result = self.kamailioDB.find_e164_mapping(KSR.pv.gete("$rU"), KSR.pv.gete("$avp(carrier)"))
 
         if(result is None):
             KSR.tm.t_send_reply(404, "Number not assigned")
-            KSR.info("No mapping found for number\n")
+            self.log_info("No mapping found for number\n")
 
             return -255
 
         KSR.hdr.append("X-Openline-Origin-Carrier: " + KSR.pv.gete("$avp(carrier)") + "\r\n")
         KSR.pv.sets("$ru", result['sipuri'])
-        KSR.info("Routing call to %s\n" % result['sipuri'])
+        self.log_info("Routing call to %s\n" % result['sipuri'])
         return self.ksr_route_asterisk(msg)
 
     def ksr_route_asterisk(self, msg):
         rc = KSR.dispatcher.ds_select_dst(0, 3)
 
-        KSR.hdr.remove("X-Openline-UUID")
-        KSR.hdr.append("X-Openline-UUID: " + str(uuid.uuid4()) + "\r\n")
         KSR.hdr.append("X-Openline-Dest: " + KSR.pv.gete("$ru") + "\r\n")
         if KSR.pv.gete("$rU") != "echo":
             KSR.pv.sets("$rU", "transcode")
@@ -549,7 +562,7 @@ class kamailio:
         return 1
 
     def ksr_xhttp_event(self, msg, evname):
-        KSR.info("===== xhttp module triggered event:\n")
+        KSR.dbg("===== xhttp module triggered event:\n")
         KSR.set_reply_close()
         KSR.set_reply_no_connect()
         if KSR.pv.get("$Rp") != 8080:
@@ -560,19 +573,19 @@ class kamailio:
             if KSR.websocket.handle_handshake()>0 :
                 return 1
             else:
-                KSR.info("handhake failed\n")
+                KSR.error("Websocket handshake failed\n")
         else:
-            KSR.info("not a ws request\n")
+            KSR.dbg("not a ws request\n")
         KSR.xhttp.xhttp_reply(200, "Ping", "text/plain", "hello world")
         return 1
 
     def ksr_rtimer_reload(self, msg, evname):
-        KSR.info("reloading address table\n")
+        KSR.dbg("reloading address table\n")
         KSR.jsonrpcs.exec('{"jsonrpc": "2.0", "method": "permissions.addressReload", "id": 1}')
-        KSR.info("reload address result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
-        KSR.info("reloading dispatcher table\n")
+        KSR.dbg("reload address result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
+        KSR.dbg("reloading dispatcher table\n")
         KSR.jsonrpcs.exec('{"jsonrpc": "2.0", "method": "dispatcher.reload", "id": 2}')
-        KSR.info("reload dispatcher result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
+        KSR.dbg("reload dispatcher result: " + KSR.pv.getw("$jsonrpl(body)") + "\n")
         return 1
 
     def ksr_websocket_event(self, msg, evname):
@@ -585,6 +598,17 @@ class kamailio:
             KSR.err("Node Up! (node=%s)\n" % (KSR.pv.gete("$ru")))
         return 1
 
+    def log_info(self, msg: str):
+        KSR.info("[%s] %s" % (KSR.pv.gete("$avp(uuid)"), msg))
+
+    def cleanup_headers(self, msg):
+        KSR.hdr.remove("X-Openline-Origin-Carrier")
+        KSR.hdr.remove("X-Openline-Dest")
+        KSR.hdr.remove("X-Openline-Origin-Carrier")
+        KSR.hdr.remove("X-Openline-Dest-Carrier")
+        KSR.hdr.remove("X-Openline-Dest-Endpoint-Type")
+        KSR.hdr.remove("X-Openline-Endpoint-Type")
+        KSR.hdr.remove("X-Openline-CallerID")
 
 
 # -- {end defining kamailio class}

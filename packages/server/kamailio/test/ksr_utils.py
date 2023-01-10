@@ -54,7 +54,7 @@ def dispatcher_select_dst(group: int, algo: int):
     return 1
 def hdr_remove(hdr_key: str):
     global hdr_vals
-    if hdr_key in hdr_vals:
+    if hdr_key in hdr_vals and len(hdr_vals[hdr_key]) > 0:
         hdr_vals[hdr_key].pop(0)
 
 def hdr_append(hdr: str):
