@@ -89,6 +89,10 @@ build {
     destination = "/tmp/kamailio/"
   }
   provisioner "file" {
+    source = "logging"
+    destination = "/tmp/kamailio/"
+  }
+  provisioner "file" {
     source = "scripts"
     destination = "/tmp/kamailio/"
   }
@@ -102,9 +106,13 @@ build {
       "sudo sh -c 'mv /tmp/kamailio/scripts/genconf.py /etc/kamailio/'",
       "sudo sh -c 'mv /tmp/kamailio/scripts/kamailio_network_setup.sh /usr/sbin/'",
       "sudo sh -c 'mv /tmp/kamailio/scripts/kamailio.service /lib/systemd/system/'",
+      "sudo sh -c 'mv /tmp/kamailio/logging/kamailio.syslog.conf /etc/rsyslog.d/'",
+      "sudo sh -c 'mv /tmp/kamailio/logging/kamailio.logrotate /etc/logrotate.d/kamailio'",
       "sudo sh -c 'chown kamailio:kamailio /etc/kamailio/'",
       "sudo sh -c 'DMQ_DOMAIN=\"${local.dmq_domain}\" AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" /etc/kamailio/genconf.py'",
       "sudo sh -c 'touch /etc/kamailio/dispatcher.list'",
+      "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
+      "sudo sh -c 'cd /tmp/; ./awslogs-agent-setup.py -r eu-west-2 -n -c /tmp/kamailio/logging/awslogs.conf'",
     ]
   }
 }
