@@ -339,8 +339,8 @@ class kamailio:
                 self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
-            self.log_info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
-            KSR.pv.sets("$fU", record['e164'])
+            self.log_info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['alias'], record['carrier']))
+            KSR.pv.sets("$fU", record['alias'])
             return self.ksr_route_to_carrier(msg, record['carrier'])
         else:
             self.log_info("transfer: attempt local routing\n")
@@ -397,10 +397,10 @@ class kamailio:
                 self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
                 return -255
-            self.log_info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['e164'], record['carrier']))
+            self.log_info("Routing call to asterisk, cli=%s carrier=%s\n" % (record['alias'], record['carrier']))
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: pstn\r\n")
             KSR.hdr.append("X-Openline-Dest-Carrier: " + record['carrier'] + "\r\n")
-            KSR.hdr.append("X-Openline-CallerID: " + record['e164'] + "\r\n")
+            KSR.hdr.append("X-Openline-CallerID: " + record['alias'] + "\r\n")
             return self.ksr_route_asterisk(msg)
         else:
             self.log_info("Destination not a number nor is registered")

@@ -13,8 +13,10 @@ import (
 type GetNumberMapping struct {
 	// the id for this specific IP record
 	ID int `json:"ID"`
-	// IP address of the carrier
+	// Telephone number associated with the sip_uri
 	E164 string `json:"e164" example:"+4412345678"`
+	// Number to alias to when this sipuri makes outbound calls
+	Alias string `json:"alias" example:"+4412340000"`
 	// the sip uri to associate with this number
 	SipUri string `json:"sip_uri" example:"sip:AgentSmith@agent.openline.ai"`
 	// name of the carrier this number is associated with
@@ -23,8 +25,10 @@ type GetNumberMapping struct {
 
 // @Description Identical to GetNumberMapping except ID is omittied
 type AddNumberMapping struct {
-	// IP address of the carrier
+	// Telephone number associated with the sip_uri
 	E164 string `json:"e164" example:"+4412345678"`
+	// Number to alias to when this sipuri makes outbound calls
+	Alias string `json:"alias" example:"+4412340000"`
 	// the sip uri to associate with this number
 	SipUri string `json:"sip_uri" example:"sip:AgentSmith@agent.openline.ai"`
 	// name of the carrier this number is associated with
@@ -61,6 +65,7 @@ func (nr *numberRoute) getMapping(c *gin.Context) {
 	var response GetNumberMapping
 	response.ID = numberMapping.ID
 	response.E164 = numberMapping.E164
+	response.Alias = numberMapping.Alias
 	response.SipUri = numberMapping.Sipuri
 	response.Carrier = numberMapping.CarrierName
 	c.JSON(http.StatusOK, response)
@@ -132,6 +137,7 @@ func (nr *numberRoute) getMappingList(c *gin.Context) {
 		resultList[i] = &GetNumberMapping{
 			ID:      numberMappingList[i].ID,
 			E164:    numberMappingList[i].E164,
+			Alias:   numberMappingList[i].Alias,
 			SipUri:  numberMappingList[i].Sipuri,
 			Carrier: numberMappingList[i].CarrierName,
 		}
@@ -156,6 +162,7 @@ func (nr *numberRoute) addMapping(c *gin.Context) {
 
 	numberMapping, err := nr.client.OpenlineNumberMapping.Create().
 		SetE164(newNumber.E164).
+		SetAlias(newNumber.Alias).
 		SetSipuri(newNumber.SipUri).
 		SetCarrierName(newNumber.Carrier).
 		Save(c)
@@ -168,6 +175,7 @@ func (nr *numberRoute) addMapping(c *gin.Context) {
 	var response GetNumberMapping
 	response.ID = numberMapping.ID
 	response.E164 = numberMapping.E164
+	response.Alias = numberMapping.Alias
 	response.SipUri = numberMapping.Sipuri
 	response.Carrier = numberMapping.CarrierName
 	c.JSON(http.StatusOK, response)

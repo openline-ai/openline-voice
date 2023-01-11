@@ -24,6 +24,7 @@ func (OpenlineNumberMapping) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("e164").
 			Unique(),
+		field.String("alias"),
 		field.String("sipuri").
 			Unique(),
 		field.String("carrier_name"),

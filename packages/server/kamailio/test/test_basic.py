@@ -104,6 +104,7 @@ class MyTestCase(unittest.TestCase):
         def mock_sipuri_mapping(sipuri:str):
             self.assertEqual(sipuri,"sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
             return {"e164": '+328080970',
+                    "alias":'+322800000',
                     "carrier": 'test_carrier'
                     }
         k.kamailioDB._mock['find_sipuri_mapping'] = mock_sipuri_mapping
@@ -118,7 +119,7 @@ class MyTestCase(unittest.TestCase):
 
 
         self.assertIsNotNone(ksr_utils.pvar_get("$hdr(X-Openline-UUID)"), "Missing UUID Header")
-        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-CallerID)"), "+328080970", "CallerID not SET!")
+        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-CallerID)"), "+322800000", "CallerID not SET!")
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest-Carrier)"), "test_carrier", "Carrier not SET!")
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest)"), "sip:+44075755588858@openline.ai", "X-Openline-Dest not set!")
         self.assertTrue(ksr_relay_called, "Call was not routed!")
@@ -226,6 +227,7 @@ class MyTestCase(unittest.TestCase):
         def mock_sipuri_mapping(sipuri:str):
             self.assertEqual(sipuri,"sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
             return {"e164": '+328080970',
+                    "alias": '+322800000',
                     "carrier": 'test_carrier'
                     }
         k.kamailioDB._mock['find_sipuri_mapping'] = mock_sipuri_mapping
@@ -234,7 +236,7 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:+44075755588858@carrier.domain", "RURI not set to expected destination")  # add assertion here
         self.assertTrue(ksr_relay_called, "Call was not routed!")
-        self.assertEqual("+328080970", ksr_utils.pvar_get("$fU"))
+        self.assertEqual("+322800000", ksr_utils.pvar_get("$fU"))
         #ensure the digest auth handler was armed
         self.assertTrue(ksr_on_failure_called, "Call was not routed!")
         self.assertEqual("my_username", ksr_utils.pvar_get("$avp(auser)"))
