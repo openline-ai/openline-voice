@@ -15,7 +15,7 @@ COPY scripts/asterisk_network_setup.sh /usr/sbin/
 COPY conf/extensions.conf /etc/asterisk/
 COPY conf/pjsip.conf.template /etc/asterisk/
 COPY conf/rtp.conf.template /etc/asterisk/
-COPY conf/logger.conf.template /etc/asterisk/
+COPY conf/logger.conf /etc/asterisk/
 
 RUN sh -c 'rm -rf /var/lib/apt/lists/*'
 
