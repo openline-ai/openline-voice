@@ -37,6 +37,8 @@ spec:
               value: customer-db-postgresql.openline.svc.cluster.local
             - name: ASTERISK_HOST
               value: asterisk.openline.svc.cluster.local
+            - name: HOMER_IP
+              value: 127.0.0.2
             - name: DMQ_DOMAIN
               valueFrom:
                 fieldRef:
