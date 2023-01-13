@@ -5,6 +5,7 @@ import os
 with open("/etc/kamailio/local.conf", "w") as f:
     f.write("#!substdef \"!EPHEMERAL_AUTH_SECRET!%s!g\"\n" % (os.getenv("AUTH_SECRET")))
     f.write("#!substdef \"!DMQ_DOMAIN!%s!g\"\n" % (os.getenv("DMQ_DOMAIN")))
+    f.write("#!substdef \"!HOMER_IP_ADDRESS!%s!g\"\n" % (os.getenv("HOMER_IP")))
     f.write("#!substdef \"!DBURL!postgres://%s:%s@%s/%s!g\"\n" % (os.getenv("SQL_USER"), os.getenv("SQL_PASSWORD"), os.getenv("SQL_HOST"), os.getenv("SQL_DATABASE")))
 
 

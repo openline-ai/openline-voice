@@ -56,6 +56,12 @@ class kamailio:
         return 0
 
 
+    def ksr_enable_tracing(self, msg):
+        KSR.setflag(22)
+        KSR.siptrace.sip_trace_mode("t")
+        KSR.siptrace.sip_trace()
+        return 1
+
     # SIP request routing
     # -- equivalent of request_route{}
     def ksr_request_route(self, msg):
@@ -80,6 +86,7 @@ class kamailio:
 
         # CANCEL processing
         if KSR.is_CANCEL():
+            self.ksr_enable_tracing(msg)
             if KSR.tm.t_check_trans() > 0:
                 self.ksr_route_relay(msg)
             return 1
@@ -111,25 +118,31 @@ class kamailio:
         if KSR.pv.get("$rm")=="INVITE" :
             KSR.setflag(FLT_ACC) # do accounting
 
+
         #check if call is from carrier
         if  not KSR.is_WS() and KSR.permissions.allow_source_address(1) > 0:
+            self.ksr_enable_tracing(msg)
             return self.ksr_route_from_carrier(msg)
 
         KSR.pv.sets("$avp(uuid)", KSR.hdr.gete("X-Openline-UUID"))
         #check if call is from asterisk
         if KSR.dispatcher.ds_is_from_list(0) > 0:
+            self.ksr_enable_tracing(msg)
             self.ksr_route_from_asterisk(msg)
             return 1
 
         #INVITE forwarded from one kamailio to the other
         if KSR.pv.get("$Rp") == 5090 and KSR.registrar.registered(LOCATION) > 0:
             self.log_info("Call from Kamailio, attempting to route to local WebRTC user")
+            self.ksr_enable_tracing(msg)
             return self.ksr_route_location(msg)
 
         #Everything after this point should be WEBRTC
         if not KSR.is_WS():
             KSR.sl.sl_send_reply(403, "Request Not Allowed")
             return 1
+
+        self.ksr_enable_tracing(msg)
 
         # check if it is an authenticated
         if self.ksr_route_auth(msg) == -255:
@@ -199,6 +212,7 @@ class kamailio:
         if KSR.siputils.has_totag()<0 :
             return 1
 
+        self.ksr_enable_tracing(msg)
         # sequential request withing a dialog should
         # take the path determined by record-routing
         if KSR.rr.loose_route()>0 :

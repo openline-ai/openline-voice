@@ -6799,6 +6799,130 @@ class Dmq:
 			return 1
 		return node
 
+class Siptrace:
+	def sip_trace(self) -> int:
+		print("Calling %s" % ("siptrace.sip_trace"))
+		if "sip_trace" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['sip_trace']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def sip_trace_dst(self, param0: str) -> int:
+		print("Calling %s, %s" % ("siptrace.sip_trace_dst", param0))
+		if "sip_trace_dst" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['sip_trace_dst']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def sip_trace_dst_cid(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("siptrace.sip_trace_dst_cid", param0, param1))
+		if "sip_trace_dst_cid" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['sip_trace_dst_cid']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sip_trace_dst_cid_type(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("siptrace.sip_trace_dst_cid_type", param0, param1, param2))
+		if "sip_trace_dst_cid_type" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['sip_trace_dst_cid_type']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def hlog(self, param0: str) -> int:
+		print("Calling %s, %s" % ("siptrace.hlog", param0))
+		if "hlog" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['hlog']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def hlog_cid(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("siptrace.hlog_cid", param0, param1))
+		if "hlog_cid" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['hlog_cid']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sip_trace_mode(self, param0: str) -> int:
+		print("Calling %s, %s" % ("siptrace.sip_trace_mode", param0))
+		if "sip_trace_mode" not in _mock_data['siptrace']:
+			return 1
+		node = _mock_data['siptrace']['sip_trace_mode']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
 
 def dbg(param0: str):
 	print("Calling %s, %s" % ("dbg", param0))
@@ -7854,6 +7978,7 @@ dispatcher = Dispatcher()
 uac = Uac()
 permissions = Permissions()
 dmq = Dmq()
+siptrace = Siptrace()
 
 _mock_data[''] = {}
 _mock_data['pv'] = {}
@@ -7883,3 +8008,4 @@ _mock_data['dispatcher'] = {}
 _mock_data['uac'] = {}
 _mock_data['permissions'] = {}
 _mock_data['dmq'] = {}
+_mock_data['siptrace'] = {}
