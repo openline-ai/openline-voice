@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/apps/hunt-group/**'
       - '.github/workflows/hunt-group.yml'
+  pull_request:
   release:
     types: [created, edited]
 
@@ -30,7 +31,11 @@ jobs:
         with:
           node-version: 16
       - run: npm install -g yarn
-      - run: yarn test
+      - name: Run tests
+        run: |
+          cd packages/apps/hunt-group
+          yarn install
+          yarn test
 
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
