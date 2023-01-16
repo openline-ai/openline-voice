@@ -5,6 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "node src/server.js",
+    "test": "jest --",
+    "coverage": "jest --collectCoverage --",
     "start:dev": "nodenv -f -e node src/server.js"
   },
   "dependencies": {

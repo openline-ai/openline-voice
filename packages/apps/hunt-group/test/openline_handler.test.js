@@ -1,5 +1,4 @@
 const {welcome_openline, openline_events} = require('../src/openline_handler');
-const calls = require("../src/common/calls");
 require('dotenv').config()
 
 jest.mock('../src/common/cpaas')
