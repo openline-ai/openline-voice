@@ -2,7 +2,7 @@ const twilio = require('twilio');
 const VoiceResponse = twilio.twiml.VoiceResponse;
 
 const {redirectWelcomeTwiml, dialExtensionTwiml} = require('./common/cpaas')
-const {huntGroupDial} = require('./common/hung_group')
+const {huntGroupStart} = require('./common/hung_group')
 
 exports.welcome_gaspos = function welcome_gaspos() {
     const twiml = new VoiceResponse();
@@ -22,8 +22,8 @@ exports.welcome_gaspos = function welcome_gaspos() {
 
 exports.menu = function menu(extension, from, callSid) {
     const optionActions = {
-        '1': huntGroupDial,
-        '2': huntGroupDial,
+        '1': huntGroupStart,
+        '2': huntGroupStart,
         '3': dialExtensionTwiml(),
     };
 

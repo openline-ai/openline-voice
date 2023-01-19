@@ -14,19 +14,12 @@ exports.createCall = (tenant_name, to, from) => {
     })
 }
 
-exports.hangUpCall = (sid) => {
-    return client.calls(sid).update({twiml: hangUpTwiml()})
+exports.cancelCall = (sid) => {
+    return client.calls(sid).update({status: 'canceled'})
 }
 
 exports.recordVoicemail = (sid, say) => {
     return client.calls(sid).update({twiml: recordVoicemailTwiml(say)})
-}
-
-function hangUpTwiml() {
-    const twiml = new VoiceResponse();
-    twiml.say('Goodbye!');
-    twiml.hangup()
-    return twiml.toString()
 }
 
 function recordVoicemailTwiml(say) {
