@@ -156,8 +156,8 @@ class kamailio:
 
 
     def ksr_route_auth(self, msg):
-        if KSR.auth_ephemeral.autheph_check(KSR.pv.get("$fd")) < 0:
-            KSR.auth.auth_challenge(KSR.pv.get("$fd"), 1)
+        if KSR.auth_ephemeral.autheph_check("openline.ai") < 0:
+            KSR.auth.auth_challenge("openline.ai", 1)
             return -255
         #auth passed, yay!
         KSR.auth.consume_credentials()
