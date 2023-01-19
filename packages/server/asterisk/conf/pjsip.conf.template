@@ -20,6 +20,7 @@ webrtc=yes
 context=openline-webrtc
 disallow=all
 allow=opus,alaw,ulaw
+from_domain=openline.ai
 
 [pstn_client]
 type=identify
