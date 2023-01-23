@@ -47,7 +47,7 @@ The Openline Voice platform allows WebRTC to PSTN calling
 
 Download using the following command
 
-### set up a minikube environment
+### set up a k3d environment
 
 * This process has been tested onUbuntu 20.04 the install process may need to be adapted for other platforms
 * If you use codespaces, be sure to use the 4 core environment
@@ -57,22 +57,20 @@ Download using the following command
 #### Run the deployment script
 
 ```
-deployment/k8s/local-minikube/0-build-deploy-openline-voice-local-images.sh build
+curl http://openline.sh/install.sh | sh
+openline dev start -v voice
 ```
 
 after the script completes you can validate the status of the setup by running
 ```
-kubectl -n voice-dev get pod
+openline dev ping
 ```
 
 if you are not running the minikube on your local machine and the minikube is behind a nat you will probably need to install the turn server to have audio
 ```
-./1-start-turn.sh
+docker run -d --network=host coturn/coturn -v -z -n -X $(hostname -I|cut -f1 -d ' ') -L 0.0.0.0 --min-port=10000 --max-port=20000
 ```
-To start the tunnels for the core services you can run the folowing
-```
-./2-start-tunnels.sh
-```
+
 
 ## 🙌 Features
 
