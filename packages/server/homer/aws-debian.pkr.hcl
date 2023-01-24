@@ -1,6 +1,6 @@
-variable "environment" {
+variable "region" {
 	type=string
-	default="uat-ninja"
+	default="eu-west-2"
 	sensitive=false
 }
 
@@ -16,7 +16,7 @@ packer {
 source "amazon-ebs" "debian" {
   ami_name      = "openline-voice-homer"
   instance_type = "t2.micro"
-  region        = "eu-west-2"
+  region        = "${var.region}"
   source_ami_filter {
     filters = {
       name                = "debian-11-amd64-*"

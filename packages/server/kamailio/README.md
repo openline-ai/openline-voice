@@ -52,6 +52,14 @@ packer init aws-debian.pkr.hcl
 packer build -var "environment=development" aws-debian.pkr.hcl
 ```
 
+For production you need to specify both the environment and the region
+*DO NOT FORGET TO UPDATE THE AWS_REGION ENV VAR AS WELL*
+```
+export AWS_REGION=eu-west-1
+packer init aws-debian.pkr.hcl
+packer build -var "environment=development" -var "region=eu-west-1" aws-debian.pkr.hcl
+```
+
 ## WebRTC
 
 Webrtc requires the following variables to be set
