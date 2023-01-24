@@ -10,22 +10,22 @@ variable "region" {
 }
 data "amazon-parameterstore" "auth_secret" {
   name = "/config/kamailio-server_${var.environment}/auth_secret"
-  with_decryption = false
+  with_decryption = true
 }
 
 data "amazon-parameterstore" "db_host" {
   name = "/config/kamailio-server_${var.environment}/db_host"
-  with_decryption = false
+  with_decryption = true
 }
 
 data "amazon-parameterstore" "db_user" {
   name = "/config/kamailio-server_${var.environment}/db_user"
-  with_decryption = false
+  with_decryption = true
 }
 
 data "amazon-parameterstore" "db_database" {
   name = "/config/kamailio-server_${var.environment}/db_database"
-  with_decryption = false
+  with_decryption = true
 }
 
 data "amazon-parameterstore" "db_password" {
