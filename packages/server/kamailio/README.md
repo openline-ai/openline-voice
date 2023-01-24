@@ -57,7 +57,7 @@ For production you need to specify both the environment and the region
 ```
 export AWS_REGION=eu-west-1
 packer init aws-debian.pkr.hcl
-packer build -var "environment=development" -var "region=eu-west-1" aws-debian.pkr.hcl
+packer build -var "environment=openline-production" -var "region=eu-west-1" aws-debian.pkr.hcl
 ```
 
 ## WebRTC
