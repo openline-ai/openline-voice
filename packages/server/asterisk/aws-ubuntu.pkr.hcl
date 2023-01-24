@@ -1,3 +1,9 @@
+variable "region" {
+	type=string
+	default="eu-west-2"
+	sensitive=false
+}
+
 packer {
   required_plugins {
     amazon = {
@@ -14,7 +20,7 @@ locals {
 source "amazon-ebs" "ubuntu" {
   ami_name      = "asterisk-server-ami"
   instance_type = "t2.micro"
-  region        = "eu-west-2"
+  region        = "${var.region}"
   source_ami_filter {
     filters = {
       name                = "ubuntu/images/*ubuntu-jammy-22.04-amd64-server-*"
@@ -65,7 +71,7 @@ build {
       "sudo sh -c 'mv /tmp/asterisk/scripts/asterisk.service /etc/systemd/system'",
       "sudo sh -c 'chmod 644 /etc/systemd/system/asterisk.service'",
       "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
-      "sudo sh -c 'cd /tmp/; python2 ./awslogs-agent-setup.py -r eu-west-2 -n -c /tmp/asterisk/awslogs/awslogs.conf'",
+      "sudo sh -c 'cd /tmp/; python2 ./awslogs-agent-setup.py -r ${var.region} -n -c /tmp/asterisk/awslogs/awslogs.conf'",
     ]
   }
 }

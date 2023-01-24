@@ -21,3 +21,11 @@ packer init aws-ubuntu.pkr.hcl
 packer validate aws-ubuntu.pkr.hcl
 packer build aws-ubuntu.pkr.hcl
 ```
+
+for production builds you also need to specify the region
+
+```
+packer init aws-ubuntu.pkr.hcl
+packer validate aws-ubuntu.pkr.hcl
+packer build -var 'region=eu-west-1' aws-ubuntu.pkr.hcl
+```

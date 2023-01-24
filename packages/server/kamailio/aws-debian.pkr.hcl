@@ -3,6 +3,11 @@ variable "environment" {
 	default="uat-ninja"
 	sensitive=false
 }
+variable "region" {
+	type=string
+	default="eu-west-2"
+	sensitive=false
+}
 data "amazon-parameterstore" "auth_secret" {
   name = "/config/kamailio-server_${var.environment}/auth_secret"
   with_decryption = false
@@ -61,7 +66,7 @@ packer {
 source "amazon-ebs" "debian" {
   ami_name      = "openline-voice-kamailio_${var.environment}"
   instance_type = "t2.micro"
-  region        = "eu-west-2"
+  region        = "${var.region}"
   source_ami_filter {
     filters = {
       name                = "debian-11-amd64-*"
@@ -118,7 +123,7 @@ build {
       "sudo sh -c 'HOMER_IP=\"${local.homer_ip}\" DMQ_DOMAIN=\"${local.dmq_domain}\" AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" /etc/kamailio/genconf.py'",
       "sudo sh -c 'touch /etc/kamailio/dispatcher.list'",
       "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
-      "sudo sh -c 'cd /tmp/; ./awslogs-agent-setup.py -r eu-west-2 -n -c /tmp/kamailio/logging/awslogs.conf'",
+      "sudo sh -c 'cd /tmp/; ./awslogs-agent-setup.py -r ${var.region} -n -c /tmp/kamailio/logging/awslogs.conf'",
     ]
   }
 }
