@@ -2,11 +2,15 @@
 import configparser
 import os
 
+def subsdef_escape(str):
+    return str.replace("!", "\!")
+
+
 with open("/etc/kamailio/local.conf", "w") as f:
-    f.write("#!substdef \"!EPHEMERAL_AUTH_SECRET!%s!g\"\n" % (os.getenv("AUTH_SECRET")))
-    f.write("#!substdef \"!DMQ_DOMAIN!%s!g\"\n" % (os.getenv("DMQ_DOMAIN")))
-    f.write("#!substdef \"!HOMER_IP_ADDRESS!%s!g\"\n" % (os.getenv("HOMER_IP")))
-    f.write("#!substdef \"!DBURL!postgres://%s:%s@%s/%s!g\"\n" % (os.getenv("SQL_USER"), os.getenv("SQL_PASSWORD"), os.getenv("SQL_HOST"), os.getenv("SQL_DATABASE")))
+    f.write("#!substdef \"!EPHEMERAL_AUTH_SECRET!%s!g\"\n" % (subsdef_escape(os.getenv("AUTH_SECRET"))))
+    f.write("#!substdef \"!DMQ_DOMAIN!%s!g\"\n" % (subsdef_escape(os.getenv("DMQ_DOMAIN"))))
+    f.write("#!substdef \"!HOMER_IP_ADDRESS!%s!g\"\n" % (subsdef_escape(os.getenv("HOMER_IP"))))
+    f.write("#!substdef \"!DBURL!postgres://%s:%s@%s/%s!g\"\n" % (subsdef_escape(os.getenv("SQL_USER")), subsdef_escape(os.getenv("SQL_PASSWORD")), subsdef_escape(os.getenv("SQL_HOST")), subsdef_escape(os.getenv("SQL_DATABASE"))))
 
 
 def escape(str):
