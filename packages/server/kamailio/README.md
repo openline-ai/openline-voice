@@ -35,8 +35,8 @@ The following paramstore keys need to be set, if you are not using uat-ninja as 
 | /config/kamailio-server_{ENV}/auth_secret | the shared secret to use for ephemeral authentication, this needs to be set to the same value as inside the Oaisis app |
 | /config/kamailio-server_{ENV}/db_database | the name of the postgres database to use                                                                               |
 | /config/kamailio-server_{ENV}/db_host     | ip or hostname of the postgres database                                                                                |
-| /config/kamailio-server_uat-{ENV}/db_password | password to use to connect to the database                                                                             |
-| /config/kamailio-server_uat-{ENV}/db_user     | username to connect to the database with                                                                               |
+| /config/kamailio-server_{ENV}/db_password | password to use to connect to the database                                                                             |
+| /config/kamailio-server_{ENV}/db_user     | username to connect to the database with                                                                               |
 | /config/kamailio-server_{ENV}/dmq_domain      | domain containining all kamailio (so DMK can idenfity all nodes in the culster) |
 | /config/kamailio-server_{ENV}/homer_ip        | internal ip address of the homer server (to send traffic to) |
 
