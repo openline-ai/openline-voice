@@ -27,11 +27,11 @@ CREATE UNIQUE INDEX kamailio_address_ip_addr_idx ON kamailio_address (ip_addr);
 INSERT INTO version (table_name, table_version) values ('kamailio_address','6');
 
 INSERT INTO kamailio_address (grp, ip_addr, mask, port, tag) values
-	(1, '54.172.60.0', 30, 5060, 'twilio'),
-	(1, '54.244.51.0', 30, 5060, 'twilio'),
-	(1, '54.171.127.192', 30, 5060, 'twilio'),
-	(1, '35.156.191.128', 30, 5060, 'twilio'),
-	(1, '54.65.63.192', 30, 5060, 'twilio'),
-	(1, '54.169.127.128', 30, 5060, 'twilio'),
-	(1, '54.252.254.64', 30, 5060, 'twilio'),
-	(1, '177.71.206.192', 30, 5060, 'twilio');
+	(1, '54.172.60.0', 30, 0, 'twilio'),
+	(1, '54.244.51.0', 30, 0, 'twilio'),
+	(1, '54.171.127.192', 30, 0, 'twilio'),
+	(1, '35.156.191.128', 30, 0, 'twilio'),
+	(1, '54.65.63.192', 30, 0, 'twilio'),
+	(1, '54.169.127.128', 30, 0, 'twilio'),
+	(1, '54.252.254.64', 30, 0, 'twilio'),
+	(1, '177.71.206.192', 30, 0, 'twilio');
