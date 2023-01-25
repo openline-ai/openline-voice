@@ -5,7 +5,7 @@
 
 The Oasis Voice Network consists of Kamailio and Asterisk
 
-![Network Diagram](../images/Oasis%20Voice%20Network.png)
+![Network Diagram](../images/Full%20Voice%20Network.png)
 
 ### Kamailio
 * receives and sends WebRTC calls directly to the browser via SIP over WebSockets
