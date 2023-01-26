@@ -13,8 +13,10 @@ RUN sh -c 'rm /usr/lib/x86_64-linux-gnu/asterisk/modules/format_ogg_opus_open_so
 COPY docker_entry.sh /
 COPY scripts/asterisk_network_setup.sh /usr/sbin/
 COPY conf/extensions.conf /etc/asterisk/
+COPY conf/http.conf /etc/asterisk/
 COPY conf/pjsip.conf.template /etc/asterisk/
 COPY conf/rtp.conf.template /etc/asterisk/
+COPY conf/ari.conf.template /etc/asterisk/
 COPY conf/logger.conf /etc/asterisk/
 
 RUN sh -c 'rm -rf /var/lib/apt/lists/*'
