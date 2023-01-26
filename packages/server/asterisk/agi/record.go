@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/CyCoreSystems/agi"
 	"github.com/CyCoreSystems/ari/v6/client/native"
 	"gopkg.in/ini.v1"
@@ -26,9 +27,8 @@ func main() {
 		log.Fatal("Unable to create ari server")
 	}
 
-	err = agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
-	if err != nil {
-		log.Fatal("Unable to create agi server")
-	}
+	agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
+
+	Listen(context.Background(), cd)
 
 }
