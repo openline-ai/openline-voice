@@ -32,7 +32,14 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	}
 	inUuid := uuid.New().String()
 	streamMap.AddStream(inUuid, CallMetadata{Uuid: callUuid, Direction: IN})
-	err = cl.Channel().Dial(inChannel.Key(), "AudioSocket://127.0.0.1:8090/"+inUuid, 5)
+	_, err = cl.Channel().ExternalMedia(inChannel.Key(), ari.ExternalMediaOptions{
+		App:           cl.ApplicationName(),
+		ChannelID:     inUuid,
+		ExternalHost:  "127.0.0.1:8090",
+		Encapsulation: "audiosocket",
+		Transport:     "tcp",
+		Format:        "slin",
+	})
 	if err != nil {
 		a.Verbose("Error making Inbound AudioSocket", 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -41,7 +48,14 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	}
 	outUuid := uuid.New().String()
 	streamMap.AddStream(outUuid, CallMetadata{Uuid: callUuid, Direction: OUT})
-	err = cl.Channel().Dial(outChannel.Key(), "AudioSocket://127.0.0.1:8090/"+outUuid, 5)
+	_, err = cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
+		App:           cl.ApplicationName(),
+		ChannelID:     outUuid,
+		ExternalHost:  "127.0.0.1:8090",
+		Encapsulation: "audiosocket",
+		Transport:     "tcp",
+		Format:        "slin",
+	})
 	if err != nil {
 		a.Verbose("Error making Outbound AudioSocket", 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
