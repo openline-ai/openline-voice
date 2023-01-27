@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cfg, err := ini.Load("/etc/asterisk/ari.ini")
+	cfg, err := ini.Load("/etc/asterisk/ari.conf")
 	if err != nil {
 		log.Fatal("Unable to read config file")
 	}
