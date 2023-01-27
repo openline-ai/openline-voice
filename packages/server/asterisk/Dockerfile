@@ -1,3 +1,16 @@
+FROM golang:1.19-alpine AS build
+
+WORKDIR /app
+
+COPY agi/go.mod ./
+COPY agi/go.sum ./
+RUN go mod download
+
+COPY agi/*.go ./
+
+RUN go build -o /record_agi
+
+
 FROM ubuntu:jammy
 
 ARG opus_codec=asterisk-18.0/x86-64/codec_opus-18.0_current-x86_64
@@ -18,6 +31,8 @@ COPY conf/pjsip.conf.template /etc/asterisk/
 COPY conf/rtp.conf.template /etc/asterisk/
 COPY conf/ari.conf.template /etc/asterisk/
 COPY conf/logger.conf /etc/asterisk/
+
+COPY --from=build /record_agi /usr/local/bin/record_agi
 
 RUN sh -c 'rm -rf /var/lib/apt/lists/*'
 
