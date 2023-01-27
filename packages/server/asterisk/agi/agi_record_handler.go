@@ -7,7 +7,7 @@ import (
 )
 
 func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
-	channel := a.Variables["agi_channel"]
+	channel := a.Variables["agi_uniqueid"]
 	callUuid, err := a.Get("UUID")
 	if err != nil {
 		a.Verbose("Mandatory channel var UUID is missing", 1)
