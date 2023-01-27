@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PASSWORD=${openssl rand -base64 14}
+PASSWORD=$(openssl rand -base64 14)
 
 if [ -z "$PUBLIC_IP_EXTERNAL" ]; then
 PUBLIC_IP_EXTERNAL=$PUBLIC_IP
