@@ -6,4 +6,3 @@ pretty = yes
 type = user
 read_only = no
 password = !PASSWORD!
-allowed_origins = *
