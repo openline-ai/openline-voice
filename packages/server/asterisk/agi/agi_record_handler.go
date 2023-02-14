@@ -41,7 +41,6 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		Transport:     "tcp",
 		Format:        "slin16",
 	}, map[string]string{})
-	err = cl.Channel().Dial(inChannel.Key(), "AudioSocket://127.0.0.1:8090/"+inUuid, 5)
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Inbound AudioSocket: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
