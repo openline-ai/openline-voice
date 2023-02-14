@@ -47,6 +47,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(inUuid)
 		return
 	}
+	a.Verbose(fmt.Sprintf("Inbound AudioSocket created: %v", mediaInChannel.Key()), 1)
+
 	outUuid := uuid.New().String()
 	streamMap.AddStream(outUuid, CallMetadata{Uuid: callUuid, Direction: OUT})
 	mediaOutChannel, err := cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
@@ -66,6 +68,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		return
 	}
 
+	a.Verbose(fmt.Sprintf("Outbound AudioSocket created: %v", mediaOutChannel.Key()), 1)
 	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "inboundBridge")
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error creating Inbound Bridge: %v", err), 1)
