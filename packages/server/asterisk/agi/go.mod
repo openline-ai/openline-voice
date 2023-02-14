@@ -8,6 +8,7 @@ require (
 	github.com/CyCoreSystems/audiosocket v0.2.0
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.8.1
+	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
@@ -21,7 +22,6 @@ require (
 	github.com/rotisserie/eris v0.4.1 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
-replace github.com/CyCoreSystems/ari/v6 => github.com/openline-ai/ari/v6 v6.0.0-20230214162950-6b12ddfe8434
+replace github.com/CyCoreSystems/ari/v6 => github.com/openline-ai/ari/v6 v6.0.0-20230214164821-5c5bdbd9f959
