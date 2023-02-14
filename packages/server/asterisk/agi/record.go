@@ -26,8 +26,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to create ari server %v", err)
 	}
-
+	log.Printf("Asterisk ARI client created")
 	go func() {
+		log.Printf("Starting AGI server")
 		err := agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
 		if err != nil {
 			log.Fatalf("Unable to start agi server %v", err)

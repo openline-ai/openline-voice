@@ -20,6 +20,7 @@ func Listen(ctx context.Context, streamMap *CallData) error {
 		return errors.Wrapf(err, "failed to bind listener to socket %s", listenAddr)
 	}
 
+	log.Printf("listening on %s for recordings", listenAddr)
 	for {
 		conn, err := l.Accept()
 		if err != nil {
