@@ -10,6 +10,8 @@ import (
 func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	channel := a.Variables["agi_uniqueid"]
 	callUuid, err := a.Get("UUID")
+	defer a.Close()
+
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Mandatory channel var UUID is missing: %v", err), 1)
 		return
@@ -144,5 +146,4 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-
 }
