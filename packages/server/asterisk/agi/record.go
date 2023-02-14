@@ -27,7 +27,13 @@ func main() {
 		log.Fatalf("Unable to create ari server %v", err)
 	}
 
-	go agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
+	go func() {
+		err := agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
+		if err != nil {
+			log.Fatalf("Unable to start agi server %v", err)
+			return
+		}
+	}()
 
 	Listen(context.Background(), cd)
 
