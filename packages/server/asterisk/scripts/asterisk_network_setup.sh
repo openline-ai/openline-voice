@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 PASSWORD=$(openssl rand -base64 14)
 
