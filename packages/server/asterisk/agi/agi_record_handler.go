@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/CyCoreSystems/agi"
-	"github.com/CyCoreSystems/ari/v5"
+	"github.com/CyCoreSystems/ari/v6"
 	"github.com/google/uuid"
 )
 
@@ -40,7 +40,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
 		Format:        "slin16",
-	}, map[string]string{})
+	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Inbound AudioSocket: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -58,7 +58,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
 		Format:        "slin16",
-	}, map[string]string{})
+	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Outbound AudioSocket: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
