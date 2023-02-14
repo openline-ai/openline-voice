@@ -32,13 +32,13 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	}
 	inUuid := uuid.New().String()
 	streamMap.AddStream(inUuid, CallMetadata{Uuid: callUuid, Direction: IN})
-	_, err = cl.Channel().ExternalMedia(inChannel.Key(), ari.ExternalMediaOptions{
+	mediaInChannel, err := cl.Channel().ExternalMedia(inChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
 		ChannelID:     inUuid,
 		ExternalHost:  "127.0.0.1:8090",
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
-		Format:        "slin",
+		Format:        "slin16",
 	})
 	if err != nil {
 		a.Verbose("Error making Inbound AudioSocket", 1)
@@ -48,18 +48,94 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	}
 	outUuid := uuid.New().String()
 	streamMap.AddStream(outUuid, CallMetadata{Uuid: callUuid, Direction: OUT})
-	_, err = cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
+	mediaOutChannel, err := cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
 		ChannelID:     outUuid,
 		ExternalHost:  "127.0.0.1:8090",
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
-		Format:        "slin",
+		Format:        "slin16",
 	})
 	if err != nil {
 		a.Verbose("Error making Outbound AudioSocket", 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
 		err = cl.Channel().Hangup(outChannel.Key(), "")
+		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(outUuid)
+		return
+	}
+
+	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "inboundBridge")
+	if err != nil {
+		a.Verbose("Error creating Inbound Bridge", 1)
+		err = cl.Channel().Hangup(inChannel.Key(), "")
+		err = cl.Channel().Hangup(outChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(outUuid)
+		return
+	}
+	outBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "outboundBridge")
+	if err != nil {
+		a.Verbose("Error creating Outbound Bridge", 1)
+		err = cl.Channel().Hangup(inChannel.Key(), "")
+		err = cl.Channel().Hangup(outChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		err = cl.Bridge().Delete(inBridge.Key())
+		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(outUuid)
+		return
+	}
+	err = inBridge.AddChannel(inChannel.ID())
+	if err != nil {
+		a.Verbose("Error adding Inbound Channel to Inbound Bridge", 1)
+		err = cl.Channel().Hangup(inChannel.Key(), "")
+		err = cl.Channel().Hangup(outChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		err = cl.Bridge().Delete(inBridge.Key())
+		err = cl.Bridge().Delete(outBridge.Key())
+		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(outUuid)
+		return
+	}
+	err = inBridge.AddChannel(mediaInChannel.ID())
+	if err != nil {
+		a.Verbose("Error adding Inbound Media Channel to Inbound Bridge", 1)
+		err = cl.Channel().Hangup(inChannel.Key(), "")
+		err = cl.Channel().Hangup(outChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		err = cl.Bridge().Delete(inBridge.Key())
+		err = cl.Bridge().Delete(outBridge.Key())
+		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(outUuid)
+		return
+	}
+	err = outBridge.AddChannel(outChannel.ID())
+	if err != nil {
+		a.Verbose("Error adding Outbound Channel to Outbound Bridge", 1)
+		err = cl.Channel().Hangup(inChannel.Key(), "")
+		err = cl.Channel().Hangup(outChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		err = cl.Bridge().Delete(inBridge.Key())
+		err = cl.Bridge().Delete(outBridge.Key())
+		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(outUuid)
+		return
+	}
+	err = outBridge.AddChannel(mediaOutChannel.ID())
+	if err != nil {
+		a.Verbose("Error adding Outbound Media Channel to Outbound Bridge", 1)
+		err = cl.Channel().Hangup(inChannel.Key(), "")
+		err = cl.Channel().Hangup(outChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		err = cl.Bridge().Delete(inBridge.Key())
+		err = cl.Bridge().Delete(outBridge.Key())
 		streamMap.RemoveStream(inUuid)
 		streamMap.RemoveStream(outUuid)
 		return
