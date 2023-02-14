@@ -51,7 +51,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	streamMap.AddStream(outUuid, CallMetadata{Uuid: callUuid, Direction: OUT})
 	mediaOutChannel, err := cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
-		ChannelID:     outUuid,
+		Data:          outUuid,
 		ExternalHost:  "127.0.0.1:8090",
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
