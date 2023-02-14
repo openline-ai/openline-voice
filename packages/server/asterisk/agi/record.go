@@ -24,7 +24,7 @@ func main() {
 
 	cd := NewCallData()
 	if err != nil {
-		log.Fatal("Unable to create ari server")
+		log.Fatal("Unable to create ari server %v", err)
 	}
 
 	go agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
