@@ -7,6 +7,8 @@ import (
 	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
 	"github.com/google/uuid"
 	"log"
+	"os"
+	"os/exec"
 )
 
 func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
@@ -166,6 +168,19 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 			if len(m.Channels()) <= 1 {
 				err = cl.Channel().Hangup(mediaInChannel.Key(), "")
 				err = cl.Bridge().Delete(inBridge.Key())
+
+				if streamMap.RemoveStream(inUuid) {
+					cmd := exec.Command("sox", "-M", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
+					err = cmd.Run()
+					if err != nil {
+						log.Printf("Error running sox: %v", err)
+					} else {
+						log.Printf("Wrote file: /tmp/%s.wav", callUuid)
+						os.Remove("/tmp/" + callUuid + "-in.raw")
+						os.Remove("/tmp/" + callUuid + "-out.raw")
+					}
+
+				}
 			}
 		}
 	}()
