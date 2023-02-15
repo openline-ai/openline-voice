@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"github.com/CyCoreSystems/agi"
 	"github.com/CyCoreSystems/ari/v6/client/native"
 	"gopkg.in/ini.v1"
@@ -35,7 +34,5 @@ func main() {
 			return
 		}
 	}()
-
-	Listen(context.Background(), cd)
 
 }
