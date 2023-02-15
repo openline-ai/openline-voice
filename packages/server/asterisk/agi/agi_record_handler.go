@@ -40,10 +40,11 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	inData := CallMetadata{Uuid: callUuid, Direction: IN}
 	streamMap.AddStream(inData)
 	inRtpServer := NewRtpServer(&inData)
+	log.Printf("Inbound RTP Server created: %s", inRtpServer.Address)
 	go inRtpServer.Listen()
 	mediaInChannel, err := cl.Channel().ExternalMedia(inChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
-		ExternalHost:  "127.0.0.1:8090",
+		ExternalHost:  inRtpServer.Address,
 		Encapsulation: "rtp",
 		Transport:     "tcp",
 		Format:        "slin16",
@@ -59,10 +60,11 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	outData := CallMetadata{Uuid: callUuid, Direction: OUT}
 	streamMap.AddStream(outData)
 	outRtpServer := NewRtpServer(&inData)
+	log.Printf("Outbound RTP Server created: %s", outRtpServer.Address)
 	go outRtpServer.Listen()
 	mediaOutChannel, err := cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
-		ExternalHost:  "127.0.0.1:8090",
+		ExternalHost:  outRtpServer.Address,
 		Encapsulation: "rtp",
 		Transport:     "tcp",
 		Format:        "slin16",
