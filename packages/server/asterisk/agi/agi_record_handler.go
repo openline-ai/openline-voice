@@ -37,40 +37,42 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(inChannel.Key(), "")
 		return
 	}
-	inUuid := uuid.New().String()
-	streamMap.AddStream(inUuid, CallMetadata{Uuid: callUuid, Direction: IN})
+	inData := CallMetadata{Uuid: callUuid, Direction: IN}
+	streamMap.AddStream(inData)
+	inRtpServer := NewRtpServer(&inData)
+	go inRtpServer.Listen()
 	mediaInChannel, err := cl.Channel().ExternalMedia(inChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
-		Data:          inUuid,
 		ExternalHost:  "127.0.0.1:8090",
-		Encapsulation: "audiosocket",
+		Encapsulation: "rtp",
 		Transport:     "tcp",
-		Format:        "alaw",
+		Format:        "slin16",
 	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Inbound AudioSocket: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
-		streamMap.RemoveStream(inUuid)
+		streamMap.RemoveStream(inData)
 		return
 	}
 	a.Verbose(fmt.Sprintf("Inbound AudioSocket created: %v", mediaInChannel.Key()), 1)
 
-	outUuid := uuid.New().String()
-	streamMap.AddStream(outUuid, CallMetadata{Uuid: callUuid, Direction: OUT})
+	outData := CallMetadata{Uuid: callUuid, Direction: OUT}
+	streamMap.AddStream(outData)
+	outRtpServer := NewRtpServer(&inData)
+	go outRtpServer.Listen()
 	mediaOutChannel, err := cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
-		Data:          outUuid,
 		ExternalHost:  "127.0.0.1:8090",
-		Encapsulation: "audiosocket",
+		Encapsulation: "rtp",
 		Transport:     "tcp",
-		Format:        "alaw",
+		Format:        "slin16",
 	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Outbound AudioSocket: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
 		err = cl.Channel().Hangup(outChannel.Key(), "")
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 
@@ -82,8 +84,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 	outBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "holding", "outboundBridge")
@@ -94,8 +96,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 	err = inBridge.AddChannelWithOptions(inChannel.ID(), &ari.BridgeAddChannelOptions{Role: "announcer"})
@@ -107,8 +109,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
 		err = cl.Bridge().Delete(outBridge.Key())
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 	err = inBridge.AddChannelWithOptions(mediaInChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"})
@@ -120,8 +122,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
 		err = cl.Bridge().Delete(outBridge.Key())
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 	err = outBridge.AddChannelWithOptions(outChannel.ID(), &ari.BridgeAddChannelOptions{Role: "announcer"})
@@ -133,8 +135,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
 		err = cl.Bridge().Delete(outBridge.Key())
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 	err = outBridge.AddChannelWithOptions(mediaOutChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"})
@@ -146,8 +148,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
 		err = cl.Bridge().Delete(outBridge.Key())
-		streamMap.RemoveStream(inUuid)
-		streamMap.RemoveStream(outUuid)
+		streamMap.RemoveStream(inData)
+		streamMap.RemoveStream(outData)
 		return
 	}
 
@@ -168,8 +170,9 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 			if len(m.Channels()) <= 1 {
 				err = cl.Channel().Hangup(mediaInChannel.Key(), "")
 				err = cl.Bridge().Delete(inBridge.Key())
+				inRtpServer.Close()
 
-				if streamMap.RemoveStream(inUuid) {
+				if streamMap.RemoveStream(inData) {
 					cmd := exec.Command("sox", "-M", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
 					err = cmd.Run()
 					if err != nil {
@@ -201,9 +204,10 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 			if len(m.Channels()) <= 1 {
 				err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 				err = cl.Bridge().Delete(outBridge.Key())
+				outRtpServer.Close()
 			}
-			if streamMap.RemoveStream(outUuid) {
-				cmd := exec.Command("sox", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav", "-c", "2", "-M")
+			if streamMap.RemoveStream(outData) {
+				cmd := exec.Command("sox", "-M", "-r", "1600", "-e", "signed-integer", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "16000", "-e", "signed-integer", "-c", "1", "/tmp/"+callUuid+"-out.raw", "-M", "-c", "2", "/tmp/"+callUuid+".wav")
 				err = cmd.Run()
 				if err != nil {
 					log.Printf("Error running sox: %v", err)

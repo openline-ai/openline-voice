@@ -1,104 +1,62 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/CyCoreSystems/audiosocket"
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
-	"io"
+	"github.com/pion/rtp"
 	"log"
 	"net"
 	"os"
 )
 
-const listenAddr = ":8090"
+const listenAddr = ":0"
 
-func Listen(ctx context.Context, streamMap *CallData) error {
-	l, err := net.Listen("tcp", listenAddr)
-	if err != nil {
-		return errors.Wrapf(err, "failed to bind listener to socket %s", listenAddr)
-	}
-
-	log.Printf("listening on %s for recordings", listenAddr)
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			log.Println("failed to accept new connection:", err)
-			continue
-		}
-
-		go Handle(ctx, conn, streamMap)
-	}
+type RtpServer struct {
+	Address   string
+	Data      *CallMetadata
+	PayloadId int
+	socket    net.PacketConn
+	file      *os.File
 }
 
-func getCallID(c net.Conn) (uuid.UUID, error) {
-	m, err := audiosocket.NextMessage(c)
+func NewRtpServer(cd *CallMetadata) *RtpServer {
+	l, err := net.ListenPacket("udp", listenAddr)
 	if err != nil {
-		return uuid.Nil, err
+		log.Fatal(err)
 	}
-
-	if m.Kind() != audiosocket.KindID {
-		return uuid.Nil, errors.Errorf("invalid message type %d getting CallID", m.Kind())
-	}
-
-	return uuid.FromBytes(m.Payload())
-}
-
-func Handle(ctx context.Context, c net.Conn, streamMap *CallData) {
-	var err error
-	var id uuid.UUID
-
-	defer func() {
-		// Tell AudioSocket to shut down, if it is still up
-		c.Write(audiosocket.HangupMessage()) // nolint: errcheck
-	}()
-
-	id, err = getCallID(c)
-	if err != nil {
-		log.Println("failed to get call ID:", err)
-		return
-	}
-	log.Printf("processing call %s\n", id.String())
-	cd := streamMap.GetStream(id.String())
-
-	if cd == nil {
-		log.Println("Unknown Stream ID")
-		return
-	}
-
-	log.Printf("Stream for %s direction %s\n", cd.Uuid, cd.Direction)
-
 	f, err := os.Create("/tmp/" + cd.Uuid + "-" + string(cd.Direction) + ".raw")
-	if err != nil {
-		fmt.Println("Unable to open file for writing: " + err.Error())
-	}
 
-	defer f.Close()
-
-	for ctx.Err() == nil {
-		m, err := audiosocket.NextMessage(c)
-		if errors.Cause(err) == io.EOF {
-			log.Println("audiosocket closed")
-			return
-		}
-		if m.Kind() == audiosocket.KindHangup {
-			log.Println("audiosocket received hangup command")
-			return
-		}
-		if m.Kind() == audiosocket.KindError {
-			log.Println("error from audiosocket")
-			continue
-		}
-		if m.Kind() != audiosocket.KindSlin {
-			log.Println("ignoring non-slin message", m.Kind())
-			continue
-		}
-		if m.ContentLength() < 1 {
-			log.Println("no content")
-			continue
-		}
-		f.Write(m.Payload())
+	return &RtpServer{
+		Address: l.LocalAddr().String(),
+		Data:    cd,
+		socket:  l,
+		file:    f,
 	}
-	return
+}
+
+func (rtpServer RtpServer) Close() {
+	rtpServer.socket.Close()
+	rtpServer.file.Close()
+}
+
+func (rtpServer RtpServer) Listen() error {
+	for {
+		buf := make([]byte, 1024)
+		packetSize, _, err := rtpServer.socket.ReadFrom(buf)
+		if err != nil {
+			log.Println("Error reading from socket:", err)
+			return err
+		}
+
+		rtpPacket := &rtp.Packet{}
+		err = rtpPacket.Unmarshal(buf[:packetSize])
+		if err != nil {
+			log.Println("Error unmarshalling rtp packet:", err)
+			continue
+		}
+		rtpServer.PayloadId = int(rtpPacket.PayloadType)
+		_, err = rtpServer.file.Write(rtpPacket.Payload)
+		if err != nil {
+			log.Println("Error writing to file:", err)
+		}
+		log.Printf("Received packet payload %d bytes with payload id %d direction %s sequence %d\n", len(rtpPacket.Payload), rtpPacket.PayloadType, string(rtpServer.Data.Direction), rtpPacket.SequenceNumber)
+	}
 }
