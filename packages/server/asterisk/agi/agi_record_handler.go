@@ -71,7 +71,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	}
 
 	a.Verbose(fmt.Sprintf("Outbound AudioSocket created: %v", mediaOutChannel.Key()), 1)
-	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "inboundBridge")
+	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "holding", "inboundBridge")
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error creating Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -82,7 +82,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-	outBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "outboundBridge")
+	outBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "holding", "outboundBridge")
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error creating Outbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -94,7 +94,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-	err = inBridge.AddChannel(inChannel.ID())
+	err = inBridge.AddChannelWithOptions(inChannel.ID(), &ari.BridgeAddChannelOptions{Role: "announcer"})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Inbound Channel to Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -107,7 +107,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-	err = inBridge.AddChannel(mediaInChannel.ID())
+	err = inBridge.AddChannelWithOptions(mediaInChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"}
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Inbound Media Channel to Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -120,7 +120,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-	err = outBridge.AddChannel(outChannel.ID())
+	err = outBridge.AddChannelWithOptions(outChannel.ID(), &ari.BridgeAddChannelOptions{Role: "announcer"})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Outbound Channel to Outbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -133,7 +133,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-	err = outBridge.AddChannel(mediaOutChannel.ID())
+	err = outBridge.AddChannelWithOptions(mediaOutChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Outbound Media Channel to Outbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
