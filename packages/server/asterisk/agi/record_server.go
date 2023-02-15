@@ -69,7 +69,7 @@ func Handle(ctx context.Context, c net.Conn, streamMap *CallData) {
 
 	log.Printf("Stream for %s direction %s\n", cd.Uuid, cd.Direction)
 
-	f, err := os.Create("/tmp/" + cd.Uuid + "-" + string(cd.Direction) + ".raw")
+	f, err := os.Create("/tmp/" + cd.Uuid + "-" + string(cd.Direction) + ".s16")
 	if err != nil {
 		fmt.Println("Unable to open file for writing: " + err.Error())
 	}
