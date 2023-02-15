@@ -163,7 +163,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 			}
 			log.Printf("Got event: %v", m)
 
-			if m.Type == ari.Events.ChannelLeftBridge {
+			if len(m.Channels()) <= 1 {
 				err = cl.Channel().Hangup(mediaInChannel.Key(), "")
 				err = cl.Bridge().Delete(inBridge.Key())
 			}
@@ -183,7 +183,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 				return
 			}
 			log.Printf("Got event: %v", m)
-			if m.Type == ari.Events.ChannelLeftBridge {
+			if len(m.Channels()) <= 1 {
 				err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 				err = cl.Bridge().Delete(outBridge.Key())
 			}
