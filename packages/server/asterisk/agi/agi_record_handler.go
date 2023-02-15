@@ -107,7 +107,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
-	err = inBridge.AddChannelWithOptions(mediaInChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"}
+	err = inBridge.AddChannelWithOptions(mediaInChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Inbound Media Channel to Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
