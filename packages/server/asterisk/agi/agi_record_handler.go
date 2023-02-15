@@ -153,6 +153,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	inEvents := inMonitor.Watch()
 
 	go func() {
+		log.Printf("Inbound Bridge Monitor started")
 		for {
 			m, ok := <-inEvents
 
@@ -160,6 +161,8 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 				log.Printf("Inbound Bridge Monitor closed")
 				return
 			}
+			log.Printf("Got event: %v", m)
+
 			if m.Type == ari.Events.ChannelLeftBridge {
 				err = cl.Channel().Hangup(mediaInChannel.Key(), "")
 				err = cl.Bridge().Delete(inBridge.Key())
@@ -171,6 +174,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	outEvents := outMonitor.Watch()
 
 	go func() {
+		log.Printf("Outbound Bridge Monitor started")
 		for {
 			m, ok := <-outEvents
 
@@ -178,6 +182,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 				log.Printf("Outbound Bridge Monitor closed")
 				return
 			}
+			log.Printf("Got event: %v", m)
 			if m.Type == ari.Events.ChannelLeftBridge {
 				err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 				err = cl.Bridge().Delete(outBridge.Key())
