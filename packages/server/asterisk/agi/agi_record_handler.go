@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/CyCoreSystems/agi"
 	"github.com/CyCoreSystems/ari/v6"
+	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
 	"github.com/google/uuid"
+	"log"
 )
 
 func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
@@ -146,4 +148,40 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outUuid)
 		return
 	}
+
+	inMonitor := bridgemon.New(inBridge)
+	inEvents := inMonitor.Watch()
+
+	go func() {
+		for {
+			m, ok := <-inEvents
+
+			if !ok {
+				log.Printf("Inbound Bridge Monitor closed")
+				return
+			}
+			if m.Type == ari.Events.ChannelLeftBridge {
+				err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+				err = cl.Bridge().Delete(inBridge.Key())
+			}
+		}
+	}()
+
+	outMonitor := bridgemon.New(outBridge)
+	outEvents := outMonitor.Watch()
+
+	go func() {
+		for {
+			m, ok := <-outEvents
+
+			if !ok {
+				log.Printf("Outbound Bridge Monitor closed")
+				return
+			}
+			if m.Type == ari.Events.ChannelLeftBridge {
+				err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+				err = cl.Bridge().Delete(outBridge.Key())
+			}
+		}
+	}()
 }
