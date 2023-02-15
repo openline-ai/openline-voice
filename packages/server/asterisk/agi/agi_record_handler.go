@@ -41,7 +41,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		ExternalHost:  "127.0.0.1:8090",
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
-		Format:        "slin8",
+		Format:        "slin",
 	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Inbound AudioSocket: %v", err), 1)
@@ -59,7 +59,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		ExternalHost:  "127.0.0.1:8090",
 		Encapsulation: "audiosocket",
 		Transport:     "tcp",
-		Format:        "slin8",
+		Format:        "slin",
 	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Outbound AudioSocket: %v", err), 1)
