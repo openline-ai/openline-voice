@@ -202,6 +202,18 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 				err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 				err = cl.Bridge().Delete(outBridge.Key())
 			}
+			if streamMap.RemoveStream(inUuid) {
+				cmd := exec.Command("sox", "-M", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
+				err = cmd.Run()
+				if err != nil {
+					log.Printf("Error running sox: %v", err)
+				} else {
+					log.Printf("Wrote file: /tmp/%s.wav", callUuid)
+					os.Remove("/tmp/" + callUuid + "-in.raw")
+					os.Remove("/tmp/" + callUuid + "-out.raw")
+				}
+
+			}
 		}
 	}()
 }
