@@ -21,6 +21,9 @@ type CallData struct {
 
 func (cd *CallData) AddStream(streamUuid string, data CallMetadata) {
 	cd.streamMapping[streamUuid] = data
+	if cd.channelCounting[data.Uuid] == nil {
+		cd.channelCounting[data.Uuid] = make(map[CallDirection]int)
+	}
 	cd.channelCounting[data.Uuid][data.Direction] = 1
 }
 
