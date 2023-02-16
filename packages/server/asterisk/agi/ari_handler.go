@@ -94,6 +94,7 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 	setDialVariables(dialedChannel, channelVars)
 	subAnswer := dialedChannel.Subscribe(ari.Events.ChannelStateChange)
 	subHangup := dialedChannel.Subscribe(ari.Events.ChannelDestroyed)
+	aHangup := h.Subscribe(ari.Events.ChannelDestroyed)
 	id, _ := h.GetVariable("CALLERID(num)")
 
 	dialBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-dialBridge-"+h.ID())
@@ -131,11 +132,17 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 				var counter int = 0
 				record(cl, h, IN, &counter)
 				record(cl, h, OUT, &counter)
-				return
 			}
+
 		case e := <-subHangup.Events():
 			v := e.(*ari.ChannelDestroyed)
 			log.Printf("Got Channel Destroyed for channel: %s", v.Channel.ID)
+			h.Hangup()
+			return
+		case e := <-aHangup.Events():
+			v := e.(*ari.ChannelDestroyed)
+			log.Printf("Got Channel Destroyed for channel: %s", v.Channel.ID)
+			dialedChannel.Hangup()
 			return
 		}
 	}
@@ -179,30 +186,21 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 	if err != nil {
 		log.Printf("Error creating %s Bridge: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
-		//err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaChannel.Key(), "")
-		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
-		//streamMap.RemoveStream(outData)
 		return
 	}
 	err = bridge.AddChannel(snoopChannel.ID())
 	if err != nil {
 		log.Printf("Error adding %s channel to bridge: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
-		//err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaChannel.Key(), "")
-		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
-		//streamMap.RemoveStream(outData)
 		return
 	}
 	err = bridge.AddChannel(mediaChannel.ID())
 	if err != nil {
 		log.Printf("Error adding %s media channel to bridge: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
-		//err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaChannel.Key(), "")
-		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
-		//streamMap.RemoveStream(outData)
 		return
 	}
 	inMonitor := bridgemon.New(bridge)
@@ -231,7 +229,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 		}
 	}()
 }
-func processAudio(callUuid string) (error) {
+func processAudio(callUuid string) error {
 	cmd := exec.Command("sox", "-M", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
 	err := cmd.Run()
 	if err != nil {
@@ -239,8 +237,8 @@ func processAudio(callUuid string) (error) {
 		return err
 	} else {
 		log.Printf("Wrote file: /tmp/%s.wav", callUuid)
-		//os.Remove("/tmp/" + callUuid + "-in.raw")
-		//os.Remove("/tmp/" + callUuid + "-out.raw")
+		os.Remove("/tmp/" + callUuid + "-in.raw")
+		os.Remove("/tmp/" + callUuid + "-out.raw")
 
 	}
 	return nil
