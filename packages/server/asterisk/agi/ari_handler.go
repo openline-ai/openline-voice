@@ -74,6 +74,7 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 	if err != nil {
 		log.Printf("Error getting channel vars: %v", err)
 		err = cl.Channel().Hangup(h.Key(), "")
+		h.Busy()
 		return
 	}
 
@@ -86,15 +87,38 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 
 	if err != nil {
 		log.Printf("Error creating outbound channel: %v", err)
+		h.Busy()
 		return
 	}
 	setDialVariables(dialedChannel, channelVars)
 	subAnswer := dialedChannel.Subscribe(ari.Events.ChannelStateChange)
 	subHangup := dialedChannel.Subscribe(ari.Events.ChannelDestroyed)
 	id, _ := h.GetVariable("CALLERID(num)")
+
+	dialBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-dialBridge-"+h.ID())
+
+	if err != nil {
+		log.Printf("Error creating bridge: %v", err)
+		h.Busy()
+		return
+	}
+	err = dialBridge.AddChannel(h.ID())
+	if err != nil {
+		log.Printf("Error adding calling channel to bridge: %v", err)
+		h.Busy()
+		return
+	}
+	err = dialBridge.AddChannel(dialedChannel.ID())
+	if err != nil {
+		log.Printf("Error adding dialed channel to bridge: %v", err)
+		h.Busy()
+		return
+	}
+
 	err = cl.Channel().Dial(dialedChannel.Key(), id, 120)
 	if err != nil {
 		log.Printf("Error dialing: %v", err)
+		h.Busy()
 		return
 	}
 	for {
