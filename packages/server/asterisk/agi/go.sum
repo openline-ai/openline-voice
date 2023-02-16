@@ -6,6 +6,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/CyCoreSystems/agi v0.6.3 h1:7rT5yf49X7zVyx6Z832SUTc8GQMhF8HD2UY7593ztZc=
 github.com/CyCoreSystems/agi v0.6.3/go.mod h1:ByOfRdjo7zlcROEaiO+IUTqbdX/tnIPbkXj+ydvgRPA=
+github.com/CyCoreSystems/ari/v6 v6.0.0-20230215145006-2a459024fa22 h1:u1LGuPizwclDkhSswz7jC2o5G5u6F/Tef75O0Gvw37o=
+github.com/CyCoreSystems/ari/v6 v6.0.0-20230215145006-2a459024fa22/go.mod h1:tBLZSuEzw3t3a7lufm53In7+/CBgFa1NuYJ58mreYtg=
 github.com/CyCoreSystems/audiosocket v0.2.0 h1:/743puF9kMxOHht3RHA2D/oVvEZFyqeSoZx+N7po60k=
 github.com/CyCoreSystems/audiosocket v0.2.0/go.mod h1:nIbJK373XkR1EDRCqfdlKBGogEeBR5yyR5ah6tchDvc=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

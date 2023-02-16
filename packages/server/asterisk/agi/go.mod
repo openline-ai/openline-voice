@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/CyCoreSystems/agi v0.6.3
-	github.com/CyCoreSystems/ari/v6 v6.0.0-20230123132202-46d8f709c396
+	github.com/CyCoreSystems/ari/v6 v6.0.0-20230215145006-2a459024fa22
 	github.com/CyCoreSystems/audiosocket v0.2.0
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.8.1
@@ -25,5 +25,3 @@ require (
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 )
-
-replace github.com/CyCoreSystems/ari/v6 => github.com/openline-ai/ari/v6 v6.0.0-20230214164821-5c5bdbd9f959
