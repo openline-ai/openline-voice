@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/CyCoreSystems/agi"
+	"github.com/CyCoreSystems/ari/v6"
 	"github.com/CyCoreSystems/ari/v6/client/native"
 	"gopkg.in/ini.v1"
 	"log"
@@ -21,16 +21,21 @@ func main() {
 		WebsocketURL: "ws://localhost:8088/ari/events",
 	})
 
-	cd := NewCallData()
+	//cd := NewCallData()
 	if err != nil {
 		log.Fatalf("Unable to create ari server %v", err)
 	}
 	log.Printf("Asterisk ARI client created")
-	log.Printf("Starting AGI server")
-	err = agi.Listen(":8080", func(a *agi.AGI) { handler(a, cl, cd) })
-	if err != nil {
-		log.Fatalf("Unable to start agi server %v", err)
-		return
+	log.Printf("Listening for new calls")
+	sub := cl.Bus().Subscribe(nil, "StasisStart")
+
+	for {
+		select {
+		case e := <-sub.Events():
+			v := e.(*ari.StasisStart)
+			log.Printf("Got stasis start channel: %s", v.Channel.ID)
+			go app(cl, cl.Channel().Get(v.Key(ari.ChannelKey, v.Channel.ID)))
+		}
 	}
 
 }
