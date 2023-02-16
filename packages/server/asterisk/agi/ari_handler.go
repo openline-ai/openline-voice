@@ -5,6 +5,7 @@ import (
 	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
 	"github.com/google/uuid"
 	"log"
+	"os/exec"
 )
 
 type ChannelVar struct {
@@ -17,7 +18,7 @@ type ChannelVar struct {
 }
 
 func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
-	uuid, err := h.GetVariable("UUID")
+	callUuid, err := h.GetVariable("UUID")
 	if err != nil {
 		log.Printf("Missing channel var UUID: %v", err)
 		return nil, err
@@ -48,7 +49,7 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 	if err == nil {
 		destCarrierPtr = &destCarrier
 	}
-	return &ChannelVar{Uuid: uuid, Dest: dest, KamailioIP: kamailioIP, EndpointName: endpointName, OriginCarrier: originCarrierPtr, DestCarrier: destCarrierPtr}, nil
+	return &ChannelVar{Uuid: callUuid, Dest: dest, KamailioIP: kamailioIP, EndpointName: endpointName, OriginCarrier: originCarrierPtr, DestCarrier: destCarrierPtr}, nil
 }
 
 func setDialVariables(h *ari.ChannelHandle, channelVars *ChannelVar) {
@@ -127,7 +128,9 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 			v := e.(*ari.ChannelStateChange)
 			log.Printf("Got Channel State Change for channel: %s new state: %s", v.Channel.ID, v.Channel.State)
 			if v.Channel.State == "Up" {
-				record(cl, h)
+				var counter int = 0
+				record(cl, h, IN, &counter)
+				record(cl, h, OUT, &counter)
 				return
 			}
 		case e := <-subHangup.Events():
@@ -139,84 +142,106 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 
 }
 
-func record(cl ari.Client, h *ari.ChannelHandle) {
+func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counter *int) {
 	callUuid, _ := h.GetVariable("UUID")
-	inData := CallMetadata{Uuid: callUuid, Direction: IN}
+	metadata := CallMetadata{Uuid: callUuid, Direction: direction}
 
-	inChannel, err := cl.Channel().Snoop(h.Key(), "managed-inbound-snoop-"+h.ID(), &ari.SnoopOptions{
+	snoopOptions := &ari.SnoopOptions{
 		App: cl.ApplicationName(),
-		Spy: ari.DirectionIn,
-	})
+	}
+	if direction == IN {
+		snoopOptions.Spy = ari.DirectionIn
+	} else {
+		snoopOptions.Spy = ari.DirectionOut
+	}
+	snoopChannel, err := cl.Channel().Snoop(h.Key(), "managed-"+string(direction)+"-snoop-"+h.ID(), snoopOptions)
 	if err != nil {
-		log.Printf("Error making Inbound Snoop: %v", err)
+		log.Printf("Error making %s Snoop: %v", direction, err)
 		return
 	}
 
-	inRtpServer := NewRtpServer(&inData)
-	log.Printf("Inbound RTP Server created: %s", inRtpServer.Address)
-	go inRtpServer.Listen()
-	mediaInChannel, err := cl.Channel().ExternalMedia(nil, ari.ExternalMediaOptions{
+	rtpServer := NewRtpServer(&metadata)
+	log.Printf("%s RTP Server created: %s", direction, rtpServer.Address)
+	go rtpServer.Listen()
+	mediaChannel, err := cl.Channel().ExternalMedia(nil, ari.ExternalMediaOptions{
 		App:          cl.ApplicationName(),
-		ExternalHost: inRtpServer.Address,
+		ExternalHost: rtpServer.Address,
 		Format:       "slin16",
-		ChannelID:    "managed-inbound-" + h.ID(),
+		ChannelID:    "managed-" + string(direction) + "-" + h.ID(),
 	})
 	if err != nil {
-		log.Printf("Error making Inbound AudioSocket: %v", err)
+		log.Printf("Error making %s AudioSocket: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		return
 	}
-	log.Printf("Inbound AudioSocket created: %v", mediaInChannel.Key())
-	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-inboundBridge-"+h.ID())
+	log.Printf("%s AudioSocket created: %v", direction, mediaChannel.Key())
+	bridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-"+string(direction)+"-"+h.ID())
 	if err != nil {
-		log.Printf("Error creating Inbound Bridge: %v", err)
+		log.Printf("Error creating %s Bridge: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		//err = cl.Channel().Hangup(outChannel.Key(), "")
-		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaChannel.Key(), "")
 		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		//streamMap.RemoveStream(outData)
 		return
 	}
-	err = inBridge.AddChannel(inChannel.ID())
+	err = bridge.AddChannel(snoopChannel.ID())
 	if err != nil {
-		log.Printf("Error adding inbound channel to bridge: %v", err)
+		log.Printf("Error adding %s channel to bridge: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		//err = cl.Channel().Hangup(outChannel.Key(), "")
-		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaChannel.Key(), "")
 		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		//streamMap.RemoveStream(outData)
 		return
 	}
-	err = inBridge.AddChannel(mediaInChannel.ID())
+	err = bridge.AddChannel(mediaChannel.ID())
 	if err != nil {
-		log.Printf("Error adding inbound media channel to bridge: %v", err)
+		log.Printf("Error adding %s media channel to bridge: %v", direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		//err = cl.Channel().Hangup(outChannel.Key(), "")
-		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
+		err = cl.Channel().Hangup(mediaChannel.Key(), "")
 		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		//streamMap.RemoveStream(outData)
 		return
 	}
-	inMonitor := bridgemon.New(inBridge)
+	inMonitor := bridgemon.New(bridge)
 	inEvents := inMonitor.Watch()
-
+	*counter++
 	go func() {
-		log.Printf("Inbound Bridge Monitor started")
+		log.Printf("%s Bridge Monitor started", direction)
 		for {
 			m, ok := <-inEvents
 
 			if !ok {
-				log.Printf("Inbound Bridge Monitor closed")
+				log.Printf("%s Bridge Monitor closed", direction)
 				return
 			}
-			log.Printf("Got event: %v", m)
+			log.Printf("%s Got event: %v", direction, m)
 
 			if len(m.Channels()) <= 1 {
-				err = cl.Channel().Hangup(mediaInChannel.Key(), "")
-				err = cl.Bridge().Delete(inBridge.Key())
-				inRtpServer.Close()
-
+				err = cl.Channel().Hangup(mediaChannel.Key(), "")
+				err = cl.Bridge().Delete(bridge.Key())
+				rtpServer.Close()
+				*counter--
+				if *counter == 0 {
+					processAudio(callUuid)
+				}
 			}
 		}
 	}()
+}
+func processAudio(callUuid string) (error) {
+	cmd := exec.Command("sox", "-M", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Error running sox: %v", err)
+		return err
+	} else {
+		log.Printf("Wrote file: /tmp/%s.wav", callUuid)
+		//os.Remove("/tmp/" + callUuid + "-in.raw")
+		//os.Remove("/tmp/" + callUuid + "-out.raw")
+
+	}
+	return nil
 }

@@ -22,7 +22,6 @@ func main() {
 		WebsocketURL: "ws://localhost:8088/ari/events",
 	})
 
-	//cd := NewCallData()
 	if err != nil {
 		log.Fatalf("Unable to create ari server %v", err)
 	}
