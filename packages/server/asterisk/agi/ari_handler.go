@@ -77,8 +77,10 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 		return
 	}
 
+	dialString := "PJSIP/" + channelVars.EndpointName + "/sip:" + channelVars.KamailioIP
 	dialedChannel, err := h.Create(ari.ChannelCreateRequest{
-		Endpoint:  "PJSIP/" + channelVars.EndpointName + "/sip:" + channelVars.KamailioIP,
+		Endpoint:  dialString,
+		App:       cl.ApplicationName(),
 		ChannelID: "managed-dialed-channel-" + h.ID(),
 	})
 
