@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const listenAddr = ":0"
+const listenAddr = "127.0.0.1:0"
 
 type RtpServer struct {
 	Address   string

@@ -7,7 +7,6 @@ import (
 	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
 	"github.com/google/uuid"
 	"log"
-	"os"
 	"os/exec"
 )
 
@@ -28,6 +27,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		a.Verbose(fmt.Sprintf("Error making Inbound Snoop: %v", err), 1)
 		return
 	}
+	/*
 	outChannel, err := cl.Channel().Snoop(ari.NewKey(ari.ChannelKey, channel), "", &ari.SnoopOptions{
 		App: cl.ApplicationName(),
 		Spy: ari.DirectionOut,
@@ -37,6 +37,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		err = cl.Channel().Hangup(inChannel.Key(), "")
 		return
 	}
+	*/
 	inData := CallMetadata{Uuid: callUuid, Direction: IN}
 	streamMap.AddStream(inData)
 	inRtpServer := NewRtpServer(&inData)
@@ -45,9 +46,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 	mediaInChannel, err := cl.Channel().ExternalMedia(inChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
 		ExternalHost:  inRtpServer.Address,
-		Encapsulation: "rtp",
-		Transport:     "tcp",
-		Format:        "slin16",
+		Format:        "alaw",
 	})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error making Inbound AudioSocket: %v", err), 1)
@@ -56,17 +55,15 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		return
 	}
 	a.Verbose(fmt.Sprintf("Inbound AudioSocket created: %v", mediaInChannel.Key()), 1)
-
+/*
 	outData := CallMetadata{Uuid: callUuid, Direction: OUT}
 	streamMap.AddStream(outData)
-	outRtpServer := NewRtpServer(&inData)
+	outRtpServer := NewRtpServer(&outData)
 	log.Printf("Outbound RTP Server created: %s", outRtpServer.Address)
 	go outRtpServer.Listen()
 	mediaOutChannel, err := cl.Channel().ExternalMedia(outChannel.Key(), ari.ExternalMediaOptions{
 		App:           cl.ApplicationName(),
 		ExternalHost:  outRtpServer.Address,
-		Encapsulation: "rtp",
-		Transport:     "tcp",
 		Format:        "slin16",
 	})
 	if err != nil {
@@ -77,20 +74,21 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outData)
 		return
 	}
-
 	a.Verbose(fmt.Sprintf("Outbound AudioSocket created: %v", mediaOutChannel.Key()), 1)
-	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "holding", "inboundBridge")
+*/
+	inBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", channel+"-inboundBridge")
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error creating Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
-		err = cl.Channel().Hangup(outChannel.Key(), "")
+		//err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
-		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		streamMap.RemoveStream(inData)
-		streamMap.RemoveStream(outData)
+		//streamMap.RemoveStream(outData)
 		return
 	}
-	outBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "holding", "outboundBridge")
+	/*
+	outBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "holding", channel +"-outboundBridge")
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error creating Outbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
@@ -102,32 +100,35 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outData)
 		return
 	}
-	err = inBridge.AddChannelWithOptions(inChannel.ID(), &ari.BridgeAddChannelOptions{Role: "announcer"})
+	*/
+
+	err = inBridge.AddChannel(inChannel.ID())
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Inbound Channel to Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
-		err = cl.Channel().Hangup(outChannel.Key(), "")
+		//err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
-		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
-		err = cl.Bridge().Delete(outBridge.Key())
+		//err = cl.Bridge().Delete(outBridge.Key())
 		streamMap.RemoveStream(inData)
-		streamMap.RemoveStream(outData)
+		//streamMap.RemoveStream(outData)
 		return
 	}
-	err = inBridge.AddChannelWithOptions(mediaInChannel.ID(), &ari.BridgeAddChannelOptions{Role: "participant"})
+	err = inBridge.AddChannel(mediaInChannel.ID())
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Inbound Media Channel to Inbound Bridge: %v", err), 1)
 		err = cl.Channel().Hangup(inChannel.Key(), "")
-		err = cl.Channel().Hangup(outChannel.Key(), "")
+		//err = cl.Channel().Hangup(outChannel.Key(), "")
 		err = cl.Channel().Hangup(mediaInChannel.Key(), "")
-		err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
+		//err = cl.Channel().Hangup(mediaOutChannel.Key(), "")
 		err = cl.Bridge().Delete(inBridge.Key())
-		err = cl.Bridge().Delete(outBridge.Key())
+		//err = cl.Bridge().Delete(outBridge.Key())
 		streamMap.RemoveStream(inData)
-		streamMap.RemoveStream(outData)
+		//streamMap.RemoveStream(outData)
 		return
 	}
+	/*
 	err = outBridge.AddChannelWithOptions(outChannel.ID(), &ari.BridgeAddChannelOptions{Role: "announcer"})
 	if err != nil {
 		a.Verbose(fmt.Sprintf("Error adding Outbound Channel to Outbound Bridge: %v", err), 1)
@@ -154,6 +155,7 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 		streamMap.RemoveStream(outData)
 		return
 	}
+*/
 
 	inMonitor := bridgemon.New(inBridge)
 	inEvents := inMonitor.Watch()
@@ -175,21 +177,12 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 				inRtpServer.Close()
 
 				if streamMap.RemoveStream(inData) {
-					cmd := exec.Command("sox", "-M", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "8000", "-e", "a-law", "-c", "1", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
-					err = cmd.Run()
-					if err != nil {
-						log.Printf("Error running sox: %v", err)
-					} else {
-						log.Printf("Wrote file: /tmp/%s.wav", callUuid)
-						os.Remove("/tmp/" + callUuid + "-in.raw")
-						os.Remove("/tmp/" + callUuid + "-out.raw")
-					}
-
+					processAudio(callUuid)
 				}
 			}
 		}
 	}()
-
+/*
 	outMonitor := bridgemon.New(outBridge)
 	outEvents := outMonitor.Watch()
 
@@ -209,17 +202,26 @@ func handler(a *agi.AGI, cl ari.Client, streamMap *CallData) {
 				outRtpServer.Close()
 			}
 			if streamMap.RemoveStream(outData) {
-				cmd := exec.Command("sox", "-M", "-r", "1600", "-e", "signed-integer", "-c", "1", "/tmp/"+callUuid+"-in.raw", "-r", "16000", "-e", "signed-integer", "-c", "1", "/tmp/"+callUuid+"-out.raw", "-M", "-c", "2", "/tmp/"+callUuid+".wav")
-				err = cmd.Run()
-				if err != nil {
-					log.Printf("Error running sox: %v", err)
-				} else {
-					log.Printf("Wrote file: /tmp/%s.wav", callUuid)
-					//os.Remove("/tmp/" + callUuid + "-in.raw")
-					//os.Remove("/tmp/" + callUuid + "-out.raw")
-				}
+				processAudio(callUuid)
 
 			}
 		}
 	}()
+	*/
+}
+
+
+func processAudio(callUuid string) (error) {
+	cmd := exec.Command("sox", "-M", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16","/tmp/"+callUuid+"-in.raw",  "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Error running sox: %v", err)
+		return err
+	} else {
+		log.Printf("Wrote file: /tmp/%s.wav", callUuid)
+		//os.Remove("/tmp/" + callUuid + "-in.raw")
+		//os.Remove("/tmp/" + callUuid + "-out.raw")
+
+	}
+	return nil
 }
