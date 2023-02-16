@@ -143,7 +143,7 @@ func record(cl ari.Client, h *ari.ChannelHandle) {
 	callUuid, _ := h.GetVariable("UUID")
 	inData := CallMetadata{Uuid: callUuid, Direction: IN}
 
-	inChannel, err := cl.Channel().Snoop(h.Key(), "", &ari.SnoopOptions{
+	inChannel, err := cl.Channel().Snoop(h.Key(), "managed-inbound-snoop-"+h.ID(), &ari.SnoopOptions{
 		App: cl.ApplicationName(),
 		Spy: ari.DirectionIn,
 	})
