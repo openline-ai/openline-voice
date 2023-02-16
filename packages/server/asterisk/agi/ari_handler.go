@@ -22,6 +22,7 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 		App:          cl.ApplicationName(),
 		ExternalHost: inRtpServer.Address,
 		Format:       "slin16",
+		ChannelID:    "managed-inbound-" + h.ID(),
 	})
 	if err != nil {
 		log.Printf("Error making Inbound AudioSocket: %v", err)

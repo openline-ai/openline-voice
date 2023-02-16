@@ -5,6 +5,7 @@ import (
 	"github.com/CyCoreSystems/ari/v6/client/native"
 	"gopkg.in/ini.v1"
 	"log"
+	"strings"
 )
 
 func main() {
@@ -34,7 +35,9 @@ func main() {
 		case e := <-sub.Events():
 			v := e.(*ari.StasisStart)
 			log.Printf("Got stasis start channel: %s", v.Channel.ID)
-			go app(cl, cl.Channel().Get(v.Key(ari.ChannelKey, v.Channel.ID)))
+			if !strings.HasPrefix(v.Channel.ID, "managed") {
+				go app(cl, cl.Channel().Get(v.Key(ari.ChannelKey, v.Channel.ID)))
+			}
 		}
 	}
 
