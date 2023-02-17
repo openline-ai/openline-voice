@@ -41,7 +41,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo sh -c 'add-apt-repository universe && apt-get update'",
-      "sudo sh -c 'apt-get install -y asterisk sox python2'",
+      "sudo sh -c 'apt-get install -y asterisk sox python2 golang'",
       "sudo sh -c 'mkdir -p /usr/src/codecs/opus'",
       "sudo sh -c 'cd /usr/src/codecs/opus && curl -sL http://downloads.digium.com/pub/telephony/codec_opus/${local.opus_codec}.tar.gz | tar --strip-components 1 -xz'",
       "sudo sh -c 'cp /usr/src/codecs/opus/*.so /usr/lib/x86_64-linux-gnu/asterisk/modules/'",
@@ -60,6 +60,10 @@ build {
 	destination = "/tmp/asterisk/"
   }
   provisioner "file" { 
+	source = "ari"
+	destination = "/tmp/asterisk/"
+  }
+  provisioner "file" { 
 	source = "awslogs"
 	destination = "/tmp/asterisk/"
   }
@@ -72,6 +76,7 @@ build {
       "sudo sh -c 'chmod 644 /etc/systemd/system/asterisk.service'",
       "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
       "sudo sh -c 'cd /tmp/; python2 ./awslogs-agent-setup.py -r ${var.region} -n -c /tmp/asterisk/awslogs/awslogs.conf'",
+      "sudo sh -c 'cd /tmp/asterisk/ari;go mod download;go build -o /usr/local/bin/record_agi'",
     ]
   }
 }
