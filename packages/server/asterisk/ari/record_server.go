@@ -57,6 +57,5 @@ func (rtpServer RtpServer) Listen() error {
 		if err != nil {
 			log.Println("Error writing to file:", err)
 		}
-		log.Printf("Received packet payload %d bytes with payload id %d direction %s sequence %d\n", len(rtpPacket.Payload), rtpPacket.PayloadType, string(rtpServer.Data.Direction), rtpPacket.SequenceNumber)
 	}
 }

@@ -2,11 +2,11 @@ FROM golang:1.19-alpine AS build
 
 WORKDIR /app
 
-COPY agi/go.mod ./
-COPY agi/go.sum ./
+COPY ari/go.mod ./
+COPY ari/go.sum ./
 RUN go mod download
 
-COPY agi/*.go ./
+COPY ari/*.go ./
 
 RUN go build -o /record_agi
 
