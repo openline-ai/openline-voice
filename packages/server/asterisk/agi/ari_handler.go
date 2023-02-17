@@ -5,6 +5,7 @@ import (
 	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
 	"github.com/google/uuid"
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -93,8 +94,8 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 	}
 	setDialVariables(dialedChannel, channelVars)
 	subAnswer := dialedChannel.Subscribe(ari.Events.ChannelStateChange)
-	subHangup := dialedChannel.Subscribe(ari.Events.ChannelLeftBridge)
-	aHangup := h.Subscribe(ari.Events.ChannelLeftBridge, ari.Events.ChannelDestroyed, ari.Events.ChannelHangupRequest, ari.Events.ChannelStateChange, ari.Events.StasisEnd)
+	subHangup := dialedChannel.Subscribe(ari.Events.ChannelHangupRequest)
+	aHangup := h.Subscribe(ari.Events.ChannelHangupRequest)
 	id, _ := h.GetVariable("CALLERID(num)")
 
 	dialBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-dialBridge-"+h.ID())
@@ -135,14 +136,16 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 			}
 
 		case e := <-subHangup.Events():
-			v := e.(*ari.ChannelLeftBridge)
-			log.Printf("Got Channel Left Bridge for channel: %s", v.Channel.ID)
+			v := e.(*ari.ChannelHangupRequest)
+			log.Printf("Got Channel Hangup for channel: %s", v.Channel.ID)
 			h.Hangup()
+			dialBridge.Delete()
 			return
 		case e := <-aHangup.Events():
-			v := e.(*ari.ChannelLeftBridge)
-			log.Printf("Got Channel Left Bridge for channel: %s", v.Channel.ID)
+			v := e.(*ari.ChannelHangupRequest)
+			log.Printf("Got Channel Hangup for channel: %s", v.Channel.ID)
 			dialedChannel.Hangup()
+			dialBridge.Delete()
 			return
 		}
 	}
