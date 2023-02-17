@@ -15,7 +15,7 @@
     "node-dev": "^7.4.3",
     "node-env-run": "^4.0.2",
     "pg": "^8.8.0",
-    "twilio": "^3.83.4",
+    "twilio": "^4.7.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
