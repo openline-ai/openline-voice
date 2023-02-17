@@ -94,7 +94,7 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 	setDialVariables(dialedChannel, channelVars)
 	subAnswer := dialedChannel.Subscribe(ari.Events.ChannelStateChange)
 	subHangup := dialedChannel.Subscribe(ari.Events.ChannelLeftBridge)
-	aHangup := h.Subscribe(ari.Events.ChannelLeftBridge)
+	aHangup := h.Subscribe(ari.Events.ChannelLeftBridge, ari.Events.ChannelDestroyed, ari.Events.ChannelHangupRequest, ari.Events.ChannelStateChange, ari.Events.StasisEnd)
 	id, _ := h.GetVariable("CALLERID(num)")
 
 	dialBridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-dialBridge-"+h.ID())
