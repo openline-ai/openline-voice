@@ -13,8 +13,6 @@ WorkingDirectory=/var/lib/asterisk
 # The following two lines are by default set to null so as to avoid
 # unnecessary console output to syslog. However, if you to, you can
 # further edit /etc/asterisk/logger.conf to log output to syslog.
-StandardOutput=null
-StandardError=null
 
 # Extra settings:
 # If you want to set them, you can add them to a file in the directory
