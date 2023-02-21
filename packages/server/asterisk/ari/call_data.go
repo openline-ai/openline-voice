@@ -1,10 +1,13 @@
 package main
 
+import "github.com/openline-ai/openline-oasis/packages/server/channels-api/model"
+
 type CallMetadata struct {
-	From      string
-	To        string
-	Uuid      string
-	Direction CallDirection
+	From       *model.VConParty
+	To         *model.VConParty
+	FromWebrtc bool
+	Uuid       string
+	Direction  CallDirection
 }
 
 type CallDirection string

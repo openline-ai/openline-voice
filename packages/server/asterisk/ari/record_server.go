@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/pion/rtp"
 	"log"
 	"net"
@@ -20,10 +21,16 @@ type RtpServer struct {
 
 func (rtpServer RtpServer) ListenForText() {
 	log.Printf("Started listening for text")
+	var participant []byte
+	if rtpServer.Data.Direction == IN {
+		participant, _ = json.Marshal(rtpServer.Data.From)
+	} else {
+		participant, _ = json.Marshal(rtpServer.Data.To)
+	}
 	for {
 		select {
 		case text := <-rtpServer.gladiaClient.channel:
-			log.Println("************************" + string(rtpServer.Data.Direction) + " Received text:", text)
+			log.Println("************************"+string(participant)+" Received text:", text)
 		case <-rtpServer.gladiaClient.completed:
 			log.Println("Shutting down ListenForText")
 			return

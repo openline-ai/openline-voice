@@ -3,21 +3,34 @@ package main
 import (
 	"github.com/CyCoreSystems/ari/v6"
 	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
+	"github.com/ghettovoice/gosip/sip/parser"
 	"github.com/google/uuid"
+	"github.com/openline-ai/openline-oasis/packages/server/channels-api/model"
 	"log"
 	"os"
 	"os/exec"
 )
 
 type ChannelVar struct {
-	Uuid          string
-	Dest          string
-	KamailioIP    string
-	EndpointName  string
-	OriginCarrier *string
-	DestCarrier   *string
+	Uuid             string
+	Dest             string
+	KamailioIP       string
+	EndpointName     string
+	OrigEndpointName string
+	OriginCarrier    *string
+	DestCarrier      *string
+	From             *model.VConParty
+	To               *model.VConParty
 }
 
+func makeMetaData(direction CallDirection, vars *ChannelVar) *CallMetadata {
+	return &CallMetadata{
+		Direction: direction,
+		Uuid:      vars.Uuid,
+		From:      vars.From,
+		To:        vars.To,
+	}
+}
 func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 	callUuid, err := h.GetVariable("UUID")
 	if err != nil {
@@ -50,7 +63,64 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 	if err == nil {
 		destCarrierPtr = &destCarrier
 	}
-	return &ChannelVar{Uuid: callUuid, Dest: dest, KamailioIP: kamailioIP, EndpointName: endpointName, OriginCarrier: originCarrierPtr, DestCarrier: destCarrierPtr}, nil
+	origEndpointName, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-Endpoint-Type)")
+	if err != nil {
+		log.Printf("Missing channel var PJSIP_HEADER(read,X-Openline-Endpoint-Type): %v", err)
+		return nil, err
+	}
+	fromId := &model.VConParty{}
+	from, err := h.GetVariable("PJSIP_HEADER(read,From)")
+	if err != nil {
+		log.Printf("Missing channel var PJSIP_HEADER(read,From): %v", err)
+		return nil, err
+	}
+	_, uri, _, err := parser.ParseAddressValue(from)
+	if err != nil {
+		log.Printf("Error parsing From header: %v", err)
+		return nil, err
+	}
+
+	if origEndpointName == "webrtc" {
+		fromIdStr := uri.User().String() + "@" + uri.Host()
+		fromId.Mailto = &fromIdStr
+
+	} else {
+
+		fromIdStr := uri.User().String()
+		fromId.Tel = &fromIdStr
+	}
+
+	toId := &model.VConParty{}
+
+	to, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-Dest)")
+	if err != nil {
+		log.Printf("Missing channel var PJSIP_HEADER(read,X-Openline-Dest): %v", err)
+		return nil, err
+	}
+
+	uri, err = parser.ParseUri(to)
+	if err != nil {
+		log.Printf("Error parsing To header: %v", err)
+		return nil, err
+	}
+
+	if endpointName == "webrtc" {
+		toStr := uri.User().String() + "@" + uri.Host()
+		toId.Mailto = &toStr
+	} else {
+		toStr := uri.User().String()
+		toId.Tel = &toStr
+	}
+
+	return &ChannelVar{Uuid: callUuid,
+		Dest:             dest,
+		KamailioIP:       kamailioIP,
+		EndpointName:     endpointName,
+		OrigEndpointName: origEndpointName,
+		OriginCarrier:    originCarrierPtr,
+		DestCarrier:      destCarrierPtr,
+		From:             fromId,
+		To:               toId}, nil
 }
 
 func setDialVariables(h *ari.ChannelHandle, channelVars *ChannelVar) {
@@ -131,8 +201,8 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 			log.Printf("Got Channel State Change for channel: %s new state: %s", v.Channel.ID, v.Channel.State)
 			if v.Channel.State == "Up" {
 				var counter int = 0
-				record(cl, h, IN, &counter)
-				record(cl, h, OUT, &counter)
+				record(cl, h, makeMetaData(IN, channelVars), &counter)
+				record(cl, h, makeMetaData(OUT, channelVars), &counter)
 			}
 
 		case e := <-subHangup.Events():
@@ -152,57 +222,55 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 
 }
 
-func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counter *int) {
-	callUuid, _ := h.GetVariable("UUID")
-	metadata := CallMetadata{Uuid: callUuid, Direction: direction}
+func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter *int) {
 
 	snoopOptions := &ari.SnoopOptions{
 		App: cl.ApplicationName(),
 	}
-	if direction == IN {
+	if metadata.Direction == IN {
 		snoopOptions.Spy = ari.DirectionIn
 	} else {
 		snoopOptions.Spy = ari.DirectionOut
 	}
-	snoopChannel, err := cl.Channel().Snoop(h.Key(), "managed-"+string(direction)+"-snoop-"+h.ID(), snoopOptions)
+	snoopChannel, err := cl.Channel().Snoop(h.Key(), "managed-"+string(metadata.Direction)+"-snoop-"+h.ID(), snoopOptions)
 	if err != nil {
-		log.Printf("Error making %s Snoop: %v", direction, err)
+		log.Printf("Error making %s Snoop: %v", metadata.Direction, err)
 		return
 	}
 
-	rtpServer := NewRtpServer(&metadata)
-	log.Printf("%s RTP Server created: %s", direction, rtpServer.Address)
+	rtpServer := NewRtpServer(metadata)
+	log.Printf("%s RTP Server created: %s", metadata.Direction, rtpServer.Address)
 	go rtpServer.Listen()
 	go rtpServer.ListenForText()
 	mediaChannel, err := cl.Channel().ExternalMedia(nil, ari.ExternalMediaOptions{
 		App:          cl.ApplicationName(),
 		ExternalHost: rtpServer.Address,
 		Format:       "slin48",
-		ChannelID:    "managed-" + string(direction) + "-" + h.ID(),
+		ChannelID:    "managed-" + string(metadata.Direction) + "-" + h.ID(),
 	})
 	if err != nil {
-		log.Printf("Error making %s AudioSocket: %v", direction, err)
+		log.Printf("Error making %s AudioSocket: %v", metadata.Direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		return
 	}
-	log.Printf("%s AudioSocket created: %v", direction, mediaChannel.Key())
-	bridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-"+string(direction)+"-"+h.ID())
+	log.Printf("%s AudioSocket created: %v", metadata.Direction, mediaChannel.Key())
+	bridge, err := cl.Bridge().Create(ari.NewKey(ari.BridgeKey, uuid.New().String()), "mixing", "managed-"+string(metadata.Direction)+"-"+h.ID())
 	if err != nil {
-		log.Printf("Error creating %s Bridge: %v", direction, err)
+		log.Printf("Error creating %s Bridge: %v", metadata.Direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		err = cl.Channel().Hangup(mediaChannel.Key(), "")
 		return
 	}
 	err = bridge.AddChannel(snoopChannel.ID())
 	if err != nil {
-		log.Printf("Error adding %s channel to bridge: %v", direction, err)
+		log.Printf("Error adding %s channel to bridge: %v", metadata.Direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		err = cl.Channel().Hangup(mediaChannel.Key(), "")
 		return
 	}
 	err = bridge.AddChannel(mediaChannel.ID())
 	if err != nil {
-		log.Printf("Error adding %s media channel to bridge: %v", direction, err)
+		log.Printf("Error adding %s media channel to bridge: %v", metadata.Direction, err)
 		err = cl.Channel().Hangup(h.Key(), "")
 		err = cl.Channel().Hangup(mediaChannel.Key(), "")
 		return
@@ -211,15 +279,15 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 	inEvents := inMonitor.Watch()
 	*counter++
 	go func() {
-		log.Printf("%s Bridge Monitor started", direction)
+		log.Printf("%s Bridge Monitor started", metadata.Direction)
 		for {
 			m, ok := <-inEvents
 
 			if !ok {
-				log.Printf("%s Bridge Monitor closed", direction)
+				log.Printf("%s Bridge Monitor closed", metadata.Direction)
 				return
 			}
-			log.Printf("%s Got event: %v", direction, m)
+			log.Printf("%s Got event: %v", metadata.Direction, m)
 
 			if len(m.Channels()) <= 1 {
 				err = cl.Channel().Hangup(mediaChannel.Key(), "")
@@ -227,7 +295,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 				rtpServer.Close()
 				*counter--
 				if *counter == 0 {
-					processAudio(callUuid)
+					processAudio(metadata.Uuid)
 				}
 			}
 		}
