@@ -22,7 +22,7 @@ func (rtpServer RtpServer) ListenForText() {
 	for {
 		select {
 		case text := <-rtpServer.gladiaClient.channel:
-			log.Println("Received text:", text)
+			log.Println("************************Received text:", text)
 		case <-rtpServer.gladiaClient.completed:
 			return
 		}
@@ -48,6 +48,7 @@ func NewRtpServer(cd *CallMetadata) *RtpServer {
 func (rtpServer RtpServer) Close() {
 	rtpServer.socket.Close()
 	rtpServer.file.Close()
+	rtpServer.gladiaClient.Close()
 }
 
 func (rtpServer RtpServer) Listen() error {

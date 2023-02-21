@@ -31,13 +31,14 @@ func swapBytes(b []byte) []byte {
 
 func (g *GladiaClient) SendAudio(payload []byte) {
 	g.bytes.Write(payload)
-	if g.bytes.Len() >= 1500 {
-		msgBytes := make([]byte, 1500)
+	if g.bytes.Len() >= 15000 {
+		msgBytes := make([]byte, 15000)
 		_, _ = g.bytes.Read(msgBytes)
 		msgBytes = swapBytes(msgBytes)
 		msgString := base64.StdEncoding.EncodeToString(msgBytes)
 
 		msg, _ := json.Marshal(gladiaPayload{Frames: msgString, SampleRate: g.sampleRate})
+		log.Printf("Sending audio: %v", string(msg))
 		g.conn.Write(msg)
 	}
 }
@@ -51,6 +52,7 @@ func (g *GladiaClient) ReadText() {
 			g.completed <- struct{}{}
 			return
 		}
+		log.Printf("Received text: %s", msg)
 		if msg == "" {
 			if g.currentText != "" {
 				g.channel <- g.currentText
@@ -59,6 +61,10 @@ func (g *GladiaClient) ReadText() {
 		g.currentText = msg
 		g.channel <- msg
 	}
+}
+
+func (g *GladiaClient) Close() {
+	g.conn.Close()
 }
 
 func NewGladiaClient(sampleRate int) *GladiaClient {
