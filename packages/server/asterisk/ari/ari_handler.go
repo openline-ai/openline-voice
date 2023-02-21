@@ -234,7 +234,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 	}()
 }
 func processAudio(callUuid string) error {
-	cmd := exec.Command("sox", "-M", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".mp3")
+	cmd := exec.Command("sox", "-M", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".ogg")
 	err := cmd.Run()
 	if err != nil {
 		log.Printf("Error running sox: %v", err)
