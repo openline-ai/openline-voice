@@ -173,10 +173,11 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 	rtpServer := NewRtpServer(&metadata)
 	log.Printf("%s RTP Server created: %s", direction, rtpServer.Address)
 	go rtpServer.Listen()
+	go rtpServer.ListenForText()
 	mediaChannel, err := cl.Channel().ExternalMedia(nil, ari.ExternalMediaOptions{
 		App:          cl.ApplicationName(),
 		ExternalHost: rtpServer.Address,
-		Format:       "slin16",
+		Format:       "slin48",
 		ChannelID:    "managed-" + string(direction) + "-" + h.ID(),
 	})
 	if err != nil {
@@ -233,7 +234,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, direction CallDirection, counte
 	}()
 }
 func processAudio(callUuid string) error {
-	cmd := exec.Command("sox", "-M", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "16000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".wav")
+	cmd := exec.Command("sox", "-M", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".mp3")
 	err := cmd.Run()
 	if err != nil {
 		log.Printf("Error running sox: %v", err)

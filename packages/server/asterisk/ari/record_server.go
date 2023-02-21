@@ -10,11 +10,23 @@ import (
 const listenAddr = "127.0.0.1:0"
 
 type RtpServer struct {
-	Address   string
-	Data      *CallMetadata
-	PayloadId int
-	socket    net.PacketConn
-	file      *os.File
+	Address      string
+	Data         *CallMetadata
+	PayloadId    int
+	socket       net.PacketConn
+	file         *os.File
+	gladiaClient *GladiaClient
+}
+
+func (rtpServer RtpServer) ListenForText() {
+	for {
+		select {
+		case text := <-rtpServer.gladiaClient.channel:
+			log.Println("Received text:", text)
+		case <-rtpServer.gladiaClient.completed:
+			return
+		}
+	}
 }
 
 func NewRtpServer(cd *CallMetadata) *RtpServer {
@@ -25,10 +37,11 @@ func NewRtpServer(cd *CallMetadata) *RtpServer {
 	f, err := os.Create("/tmp/" + cd.Uuid + "-" + string(cd.Direction) + ".raw")
 
 	return &RtpServer{
-		Address: l.LocalAddr().String(),
-		Data:    cd,
-		socket:  l,
-		file:    f,
+		Address:      l.LocalAddr().String(),
+		Data:         cd,
+		socket:       l,
+		file:         f,
+		gladiaClient: NewGladiaClient(48000),
 	}
 }
 
@@ -39,7 +52,7 @@ func (rtpServer RtpServer) Close() {
 
 func (rtpServer RtpServer) Listen() error {
 	for {
-		buf := make([]byte, 1024)
+		buf := make([]byte, 2000)
 		packetSize, _, err := rtpServer.socket.ReadFrom(buf)
 		if err != nil {
 			log.Println("Error reading from socket:", err)
@@ -57,5 +70,6 @@ func (rtpServer RtpServer) Listen() error {
 		if err != nil {
 			log.Println("Error writing to file:", err)
 		}
+		rtpServer.gladiaClient.SendAudio(rtpPacket.Payload)
 	}
 }
