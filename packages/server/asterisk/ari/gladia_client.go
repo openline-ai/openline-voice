@@ -38,12 +38,13 @@ func (g *GladiaClient) SendAudio(payload []byte) {
 		msgString := base64.StdEncoding.EncodeToString(msgBytes)
 
 		msg, _ := json.Marshal(gladiaPayload{Frames: msgString, SampleRate: g.sampleRate})
-		log.Printf("Sending audio: %v", string(msg))
+		//log.Printf("Sending audio: %v", string(msg))
 		g.conn.Write(msg)
 	}
 }
 
 func (g *GladiaClient) ReadText() {
+	log.Printf("Starting ReadText")
 	for {
 		var msg string
 		err := websocket.Message.Receive(g.conn, &msg)
@@ -52,14 +53,12 @@ func (g *GladiaClient) ReadText() {
 			g.completed <- struct{}{}
 			return
 		}
-		log.Printf("Received text: %s", msg)
 		if msg == "" {
 			if g.currentText != "" {
 				g.channel <- g.currentText
 			}
 		}
 		g.currentText = msg
-		g.channel <- msg
 	}
 }
 

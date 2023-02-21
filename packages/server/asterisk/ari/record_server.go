@@ -19,11 +19,13 @@ type RtpServer struct {
 }
 
 func (rtpServer RtpServer) ListenForText() {
+	log.Printf("Started listening for text")
 	for {
 		select {
 		case text := <-rtpServer.gladiaClient.channel:
-			log.Println("************************Received text:", text)
+			log.Println("************************" + string(rtpServer.Data.Direction) + " Received text:", text)
 		case <-rtpServer.gladiaClient.completed:
+			log.Println("Shutting down ListenForText")
 			return
 		}
 	}
@@ -52,6 +54,7 @@ func (rtpServer RtpServer) Close() {
 }
 
 func (rtpServer RtpServer) Listen() error {
+	go rtpServer.gladiaClient.ReadText()
 	for {
 		buf := make([]byte, 2000)
 		packetSize, _, err := rtpServer.socket.ReadFrom(buf)
