@@ -31,6 +31,7 @@ COPY conf/http.conf /etc/asterisk/
 COPY conf/pjsip.conf.template /etc/asterisk/
 COPY conf/rtp.conf.template /etc/asterisk/
 COPY conf/ari.conf.template /etc/asterisk/
+COPY conf/ari_record.conf.template /etc/asterisk/
 COPY conf/logger.conf /etc/asterisk/
 
 COPY --from=build /record_agi /usr/local/bin/record_agi
