@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/openline-ai/openline-oasis/packages/server/channels-api/model"
 	"github.com/pion/rtp"
 	"log"
 	"net"
@@ -11,25 +12,30 @@ import (
 const listenAddr = "127.0.0.1:0"
 
 type RtpServer struct {
-	Address      string
-	Data         *CallMetadata
-	PayloadId    int
-	socket       net.PacketConn
-	file         *os.File
-	gladiaClient *GladiaClient
+	Address       string
+	Data          *CallMetadata
+	PayloadId     int
+	socket        net.PacketConn
+	file          *os.File
+	gladiaClient  *GladiaClient
+	vconPublisher *VConEventPublisher
 }
 
 func (rtpServer RtpServer) ListenForText() {
 	log.Printf("Started listening for text")
 	var participant []byte
+	var party *model.VConParty
 	if rtpServer.Data.Direction == IN {
 		participant, _ = json.Marshal(rtpServer.Data.From)
+		party = rtpServer.Data.From
 	} else {
 		participant, _ = json.Marshal(rtpServer.Data.To)
+		party = rtpServer.Data.To
 	}
 	for {
 		select {
 		case text := <-rtpServer.gladiaClient.channel:
+			rtpServer.vconPublisher.SendMessage(party, text)
 			log.Println("************************"+string(participant)+" Received text:", text)
 		case <-rtpServer.gladiaClient.completed:
 			log.Println("Shutting down ListenForText")
@@ -38,7 +44,7 @@ func (rtpServer RtpServer) ListenForText() {
 	}
 }
 
-func NewRtpServer(cd *CallMetadata) *RtpServer {
+func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher) *RtpServer {
 	l, err := net.ListenPacket("udp", listenAddr)
 	if err != nil {
 		log.Fatal(err)
@@ -46,11 +52,12 @@ func NewRtpServer(cd *CallMetadata) *RtpServer {
 	f, err := os.Create("/tmp/" + cd.Uuid + "-" + string(cd.Direction) + ".raw")
 
 	return &RtpServer{
-		Address:      l.LocalAddr().String(),
-		Data:         cd,
-		socket:       l,
-		file:         f,
-		gladiaClient: NewGladiaClient(48000),
+		Address:       l.LocalAddr().String(),
+		Data:          cd,
+		socket:        l,
+		file:          f,
+		gladiaClient:  NewGladiaClient(48000),
+		vconPublisher: publisher,
 	}
 }
 

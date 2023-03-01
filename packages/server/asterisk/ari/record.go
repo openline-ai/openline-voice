@@ -11,7 +11,7 @@ import (
 func main() {
 	cfg, err := ini.Load("/etc/asterisk/ari.conf")
 	if err != nil {
-		log.Fatal("Unable to read config file")
+		log.Fatal("Unable to read asterisk config file")
 	}
 
 	cl, err := native.Connect(&native.Options{
@@ -29,13 +29,21 @@ func main() {
 	log.Printf("Listening for new calls")
 	sub := cl.Bus().Subscribe(nil, "StasisStart")
 
+	cfg, err = ini.Load("/etc/asterisk/ari_record.conf")
+	if err != nil {
+		log.Fatal("Unable to read ari config file")
+	}
+	conf := &RecordServiceConfig{
+		ChannelsApiService: cfg.Section("channels-api").Key("service").String(),
+		ChannelsApiKey:     cfg.Section("channels-api").Key("api-key").String(),
+	}
 	for {
 		select {
 		case e := <-sub.Events():
 			v := e.(*ari.StasisStart)
 			log.Printf("Got stasis start channel: %s", v.Channel.ID)
 			if !strings.HasPrefix(v.Channel.ID, "managed") {
-				go app(cl, cl.Channel().Get(v.Key(ari.ChannelKey, v.Channel.ID)))
+				go app(cl, cl.Channel().Get(v.Key(ari.ChannelKey, v.Channel.ID)), conf)
 			}
 		}
 	}

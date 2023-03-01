@@ -140,7 +140,7 @@ func setDialVariables(h *ari.ChannelHandle, channelVars *ChannelVar) {
 	h.SetVariable("TRANSFER_CONTEXT", "transfer")
 
 }
-func app(cl ari.Client, h *ari.ChannelHandle) {
+func app(cl ari.Client, h *ari.ChannelHandle, conf *RecordServiceConfig) {
 	log.Printf("running app channel: %s", h.Key().ID)
 	channelVars, err := getChannelVars(h)
 	if err != nil {
@@ -201,8 +201,12 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 			log.Printf("Got Channel State Change for channel: %s new state: %s", v.Channel.ID, v.Channel.State)
 			if v.Channel.State == "Up" {
 				var counter int = 0
-				record(cl, h, makeMetaData(IN, channelVars), &counter)
-				record(cl, h, makeMetaData(OUT, channelVars), &counter)
+				//func NewVConEventPublisher(conf *RecordServiceConfig, uuid string, from *model.VConParty, to *model.VConParty) *VConEventPublisher {
+
+				vconPublisher := NewVConEventPublisher(conf, channelVars.Uuid, channelVars.From, channelVars.To)
+				go vconPublisher.Run()
+				record(cl, h, makeMetaData(IN, channelVars), &counter, vconPublisher)
+				record(cl, h, makeMetaData(OUT, channelVars), &counter, vconPublisher)
 			}
 
 		case e := <-subHangup.Events():
@@ -222,7 +226,7 @@ func app(cl ari.Client, h *ari.ChannelHandle) {
 
 }
 
-func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter *int) {
+func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter *int, publisher *VConEventPublisher) {
 
 	snoopOptions := &ari.SnoopOptions{
 		App: cl.ApplicationName(),
@@ -238,7 +242,8 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 		return
 	}
 
-	rtpServer := NewRtpServer(metadata)
+	rtpServer := NewRtpServer(metadata, publisher)
+
 	log.Printf("%s RTP Server created: %s", metadata.Direction, rtpServer.Address)
 	go rtpServer.Listen()
 	go rtpServer.ListenForText()
@@ -296,6 +301,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 				*counter--
 				if *counter == 0 {
 					processAudio(metadata.Uuid)
+					publisher.Kill()
 				}
 			}
 		}
