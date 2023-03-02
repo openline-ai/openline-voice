@@ -127,7 +127,7 @@ func (v *VConEventPublisher) Run() {
 			if message.Sender == v.parties[0] {
 				vconf.Dialog[0].Parties = []int64{0, 1}
 			} else {
-				vconf.Dialog[0].Parties = []int64{0, 1}
+				vconf.Dialog[0].Parties = []int64{1, 0}
 			}
 			v.transcript = append(v.transcript, partyToString(message.Sender)+": "+message.Message)
 			v.publish(vconf)
