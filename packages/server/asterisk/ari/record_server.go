@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 const listenAddr = "127.0.0.1:0"
@@ -64,6 +65,19 @@ func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher) *RtpServer {
 func (rtpServer RtpServer) Close() {
 	rtpServer.socket.Close()
 	rtpServer.file.Close()
+	buf := make([]byte, 1920)
+	log.Printf("Flushing remaining audio")
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	rtpServer.gladiaClient.SendAudio(buf)
+	time.Sleep(5 * time.Second)
 	rtpServer.gladiaClient.Close()
 }
 
