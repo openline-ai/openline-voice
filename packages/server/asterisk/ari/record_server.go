@@ -36,8 +36,10 @@ func (rtpServer RtpServer) ListenForText() {
 	for {
 		select {
 		case text := <-rtpServer.gladiaClient.channel:
-			rtpServer.vconPublisher.SendMessage(party, text)
 			log.Println("************************"+string(participant)+" Received text:", text)
+			rtpServer.vconPublisher.SendMessage(party, text)
+			log.Println("------------------------"+string(participant)+" Received text:", text)
+
 		case <-rtpServer.gladiaClient.completed:
 			log.Println("Shutting down ListenForText")
 			return
