@@ -97,6 +97,17 @@ func (v *VConEventPublisher) Kill() {
 	v.killChannel <- true
 }
 
+func compareParties(p1 *model.VConParty, p2 *model.VConParty) bool {
+	if p1.Name != nil && p2.Name != nil {
+		return *p1.Name == *p2.Name
+	} else if p1.Mailto != nil && p2.Mailto != nil {
+		return *p1.Mailto == *p2.Mailto
+	} else if p1.Tel != nil && p2.Tel != nil {
+		return *p1.Tel == *p2.Tel
+	}
+	return false
+}
+
 func (v *VConEventPublisher) Run() {
 	log.Printf("client: starting vcon event publisher: %s\n", v.uuid)
 	for {
@@ -124,7 +135,7 @@ func (v *VConEventPublisher) Run() {
 				Start:    time.Now(),
 			}
 			// current convention is to put sender as the first index
-			if message.Sender == v.parties[0] {
+			if compareParties(message.Sender, v.parties[0]) {
 				vconf.Dialog[0].Parties = []int64{0, 1}
 			} else {
 				vconf.Dialog[0].Parties = []int64{1, 0}
