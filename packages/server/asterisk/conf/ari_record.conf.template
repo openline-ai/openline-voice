@@ -1,0 +1,3 @@
+[channels-api]
+service = !CHANNELS_API_SERVICE!
+api-key = !CHANNELS_API_KEY!
