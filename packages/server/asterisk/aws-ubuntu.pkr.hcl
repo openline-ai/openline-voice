@@ -18,7 +18,7 @@ data "amazon-parameterstore" "channels_api_key" {
 
 data "amazon-parameterstore" "channels_api_service" {
   name = "/config/asterisk-server_${var.environment}/channels_api_service"
-  with_decryption = true
+  with_decryption = false
 }
 
 
