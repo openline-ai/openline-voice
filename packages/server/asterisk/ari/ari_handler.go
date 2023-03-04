@@ -301,13 +301,15 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 				*counter--
 				if *counter == 0 {
 					audioFile, err := processAudio(metadata.Uuid)
-					if err != nil {
+					if err == nil {
 						script, err := TranscribeAudio(conf, audioFile, partyToString(metadata.From), partyToString(metadata.To))
 						if err != nil {
 							log.Printf("Error transcribing audio: %v", err)
 						} else {
 							log.Printf("Transcript: %s", script)
 						}
+					} else {
+						log.Printf("Error processing audio: %v", err)
 					}
 					publisher.Kill()
 				}
@@ -323,7 +325,7 @@ func processAudio(callUuid string) (string, error) {
 		log.Printf("Error running sox: %v", err)
 		return "", err
 	} else {
-		log.Printf("Wrote file: /tmp/%s.wav", callUuid)
+		log.Printf("Wrote file: %s", callUuid)
 		os.Remove("/tmp/" + callUuid + "-in.raw")
 		os.Remove("/tmp/" + callUuid + "-out.raw")
 
