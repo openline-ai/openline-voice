@@ -249,7 +249,7 @@ func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string,
 		if t.Channel == "channel_0" {
 			transcriptItems = append(transcriptItems, TranscriptItem{Person: person1, Text: t.Transcription})
 		} else if t.Channel == "channel_1" {
-			transcriptItems = append(transcriptItems, TranscriptItem{Person: person1, Text: t.Transcription})
+			transcriptItems = append(transcriptItems, TranscriptItem{Person: person2, Text: t.Transcription})
 		}
 	}
 	return transcriptItems, nil
