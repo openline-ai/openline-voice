@@ -99,9 +99,11 @@ func NewGladiaClient(sampleRate int) *GladiaClient {
 	}
 	log.Printf("Gladia Client: Connected to websocket: %v", conn)
 	return &GladiaClient{conn: conn,
-		currentText: "",
-		channel:     make(chan string),
-		bytes:       bytes.NewBuffer(make([]byte, 2000)),
-		sampleRate:  sampleRate,
+		currentText:  "",
+		channel:      make(chan string),
+		audioChannel: make(chan []byte),
+		completed:    make(chan interface{}),
+		bytes:        bytes.NewBuffer(make([]byte, 2000)),
+		sampleRate:   sampleRate,
 	}
 }
