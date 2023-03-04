@@ -70,8 +70,8 @@ func (rtpServer RtpServer) Close() {
 	for j := 0; j < 10; j++ {
 		for i := 0; i < 50; i++ {
 			rtpServer.gladiaClient.SendAudio(buf)
+			time.Sleep(20 * time.Millisecond)
 		}
-		time.Sleep(1 * time.Second)
 	}
 	log.Printf("Flushing complete")
 	rtpServer.gladiaClient.Close()

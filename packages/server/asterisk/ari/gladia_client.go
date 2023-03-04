@@ -15,13 +15,14 @@ type gladiaPayload struct {
 }
 
 type GladiaClient struct {
-	conn         *websocket.Conn
-	currentText  string
-	channel      chan string
-	audioChannel chan []byte
-	completed    chan interface{}
-	bytes        *bytes.Buffer
-	sampleRate   int
+	conn           *websocket.Conn
+	currentText    string
+	channel        chan string
+	audioChannel   chan []byte
+	completed      chan interface{}
+	audioCompleted chan interface{}
+	bytes          *bytes.Buffer
+	sampleRate     int
 }
 
 func swapBytes(b []byte) []byte {
@@ -57,7 +58,7 @@ func (g *GladiaClient) AudioLoop() {
 		case payload := <-g.audioChannel:
 			nextPacket = time.Now().Add(25 * time.Millisecond) // allow 5 seconds of jitter
 			g.processPacket(payload)
-		case <-g.completed:
+		case <-g.audioCompleted:
 			log.Printf("Shutting down AudioLoop")
 			return
 		}
@@ -76,6 +77,7 @@ func (g *GladiaClient) ReadText() {
 		if err != nil {
 			log.Printf("Error reading from websocket: %v", err)
 			g.completed <- struct{}{}
+			g.audioCompleted <- struct{}{}
 			return
 		}
 		if msg == "" {
@@ -99,11 +101,12 @@ func NewGladiaClient(sampleRate int) *GladiaClient {
 	}
 	log.Printf("Gladia Client: Connected to websocket: %v", conn)
 	return &GladiaClient{conn: conn,
-		currentText:  "",
-		channel:      make(chan string),
-		audioChannel: make(chan []byte),
-		completed:    make(chan interface{}),
-		bytes:        bytes.NewBuffer(make([]byte, 2000)),
-		sampleRate:   sampleRate,
+		currentText:    "",
+		channel:        make(chan string),
+		audioChannel:   make(chan []byte),
+		completed:      make(chan interface{}),
+		audioCompleted: make(chan interface{}),
+		bytes:          bytes.NewBuffer(make([]byte, 2000)),
+		sampleRate:     sampleRate,
 	}
 }
