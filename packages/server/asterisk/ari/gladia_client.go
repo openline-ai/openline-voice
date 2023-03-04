@@ -65,7 +65,7 @@ func (g *GladiaClient) AudioLoop() {
 }
 
 func (g *GladiaClient) SendAudio(payload []byte) {
-
+	g.audioChannel <- payload
 }
 
 func (g *GladiaClient) ReadText() {
