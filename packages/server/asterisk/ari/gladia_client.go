@@ -202,7 +202,7 @@ func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string,
 	writer.WriteField("output_format", "json")
 	writer.WriteField("toggle_diarization", "false")
 	writer.Close()
-	r, _ := http.NewRequest("POST", "http://example.com", body)
+	r, _ := http.NewRequest("POST", "https://api.gladia.io/audio/text/audio-transcription/", body)
 	r.Header.Add("Content-Type", writer.FormDataContentType())
 	r.Header.Add("Accept", "application/json")
 	r.Header.Add("x-gladia-key", conf.GladiaApiKey)
