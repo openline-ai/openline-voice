@@ -16,25 +16,34 @@ type VConMessage struct {
 	Sender  *model.VConParty
 	Message string
 }
+
+type VConAnalysis struct {
+	Type        model.VConAnalysisType
+	ContentType string
+	Content     string
+}
+
 type VConEventPublisher struct {
-	conf           *RecordServiceConfig
-	messageChannel chan VConMessage
-	killChannel    chan bool
-	uuid           string
-	first          bool
-	parties        []*model.VConParty
-	transcript     []string
+	conf            *RecordServiceConfig
+	messageChannel  chan VConMessage
+	analysisChannel chan VConAnalysis
+	killChannel     chan bool
+	uuid            string
+	first           bool
+	parties         []*model.VConParty
+	transcript      []string
 }
 
 func NewVConEventPublisher(conf *RecordServiceConfig, uuid string, from *model.VConParty, to *model.VConParty) *VConEventPublisher {
 	return &VConEventPublisher{
-		conf:           conf,
-		messageChannel: make(chan VConMessage),
-		killChannel:    make(chan bool),
-		uuid:           uuid,
-		first:          true,
-		parties:        []*model.VConParty{from, to},
-		transcript:     make([]string, 0),
+		conf:            conf,
+		messageChannel:  make(chan VConMessage),
+		analysisChannel: make(chan VConAnalysis),
+		killChannel:     make(chan bool),
+		uuid:            uuid,
+		first:           true,
+		parties:         []*model.VConParty{from, to},
+		transcript:      make([]string, 0),
 	}
 }
 
@@ -42,6 +51,14 @@ func (v *VConEventPublisher) SendMessage(sender *model.VConParty, message string
 	v.messageChannel <- VConMessage{
 		Sender:  sender,
 		Message: message,
+	}
+}
+
+func (v *VConEventPublisher) SendAnalysis(analysisType model.VConAnalysisType, contentType, content string) {
+	v.analysisChannel <- VConAnalysis{
+		Type:        analysisType,
+		ContentType: contentType,
+		Content:     content,
 	}
 }
 
@@ -141,6 +158,27 @@ func (v *VConEventPublisher) Run() {
 				vconf.Dialog[0].Parties = []int64{1, 0}
 			}
 			v.transcript = append(v.transcript, partyToString(message.Sender)+": "+message.Message)
+			v.publish(vconf)
+		case analysis := <-v.analysisChannel:
+			vconf := &model.VCon{}
+			if v.first {
+				v.uuid = uuid.New().String()
+				vconf.UUID = v.uuid
+				v.first = false
+			} else {
+				vconf.UUID = uuid.New().String()
+				vconf.Appended = &model.VConAppended{UUID: v.uuid}
+			}
+			vconf.Parties = make([]model.VConParty, len(v.parties))
+			vconf.Parties[0] = *v.parties[0]
+			vconf.Parties[1] = *v.parties[1]
+
+			vconf.Analysis = make([]model.VConAnalysis, 1)
+			vconf.Analysis[0] = model.VConAnalysis{
+				Body:     analysis.Content,
+				Type:     analysis.Type,
+				MimeType: analysis.ContentType,
+			}
 			v.publish(vconf)
 		case _ = <-v.killChannel:
 			log.Printf("client: killing vcon event publisher\n")

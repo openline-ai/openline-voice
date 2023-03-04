@@ -141,7 +141,7 @@ func setDialVariables(h *ari.ChannelHandle, channelVars *ChannelVar) {
 
 }
 func app(cl ari.Client, h *ari.ChannelHandle, conf *RecordServiceConfig) {
-	log.Printf("running app channel: %s", h.Key().ID)
+	log.Printf("Running app channel: %s", h.Key().ID)
 	channelVars, err := getChannelVars(h)
 	if err != nil {
 		log.Printf("Error getting channel vars: %v", err)
@@ -307,7 +307,16 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 							log.Printf("Error transcribing audio: %v", err)
 						} else {
 							log.Printf("Transcript: %s", script)
+							publisher.SendAnalysis(model.TRANSCRIPT, "text/plain", script)
+							summary, err := ConversationSummary(conf, script)
+							if err != nil {
+								log.Printf("Error summarizing conversation: %v", err)
+							} else {
+								log.Printf("Summary: %s", summary)
+								publisher.SendAnalysis(model.SUMMARY, "text/plain", summary)
+							}
 						}
+
 					} else {
 						log.Printf("Error processing audio: %v", err)
 					}
@@ -322,7 +331,7 @@ func processAudio(callUuid string) (string, error) {
 	cmd := exec.Command("sox", "-M", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", outputFile)
 	err := cmd.Run()
 	if err != nil {
-		log.Printf("Error running sox: %v", err)
+		log.Printf("Error Running sox: %v", err)
 		return "", err
 	} else {
 		log.Printf("Wrote file: %s", callUuid)

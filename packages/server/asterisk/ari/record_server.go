@@ -70,7 +70,15 @@ func (rtpServer RtpServer) Close() {
 	buf := make([]byte, 1920)
 	log.Printf("Flushing remaining audio")
 	for j := 0; j < 30; j++ {
+		if !rtpServer.gladiaClient.Running {
+			log.Println("Websocket closed, breaking out of flush loop")
+			break
+		}
 		for i := 0; i < 50; i++ {
+			if !rtpServer.gladiaClient.Running {
+				log.Println("Websocket closed, breaking out of flush loop")
+				break
+			}
 			rtpServer.gladiaClient.SendAudio(buf)
 			time.Sleep(20 * time.Millisecond)
 		}
