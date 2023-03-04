@@ -130,6 +130,11 @@ type GladiaClient struct {
 	Running        bool
 }
 
+type TranscriptItem struct {
+	Person string `json:"party"`
+	Text   string `json:"text"`
+}
+
 func swapBytes(b []byte) []byte {
 	for i := 0; i < len(b); i += 2 {
 		b[i], b[i+1] = b[i+1], b[i]
@@ -199,7 +204,7 @@ func (g *GladiaClient) Close() {
 	g.conn.Close()
 }
 
-func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string, person2 string) (string, error) {
+func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string, person2 string) ([]TranscriptItem, error) {
 	file, _ := os.Open(filename)
 	defer file.Close()
 	body := &bytes.Buffer{}
@@ -221,7 +226,7 @@ func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string,
 
 	if err != nil {
 		log.Printf("TranscribeAudio: could not send request: %s\n", err)
-		return "", err
+		return nil, err
 	}
 
 	log.Printf("TranscribeAudio: got response!\n")
@@ -229,31 +234,36 @@ func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string,
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Printf("TranscribeAudio: could not read response body: %s\n", err)
-		return "", err
+		return nil, err
 
 	}
 	transcription := &AudioTranscription{}
 	err = json.Unmarshal(resBody, &transcription)
 	if err != nil {
 		log.Printf("TranscribeAudio: could not unmarshal response body: %s\n", err)
-		return "", err
+		return nil, err
 	}
 
-	transcriptionString := ""
+	transcriptItems := make([]TranscriptItem, 0)
 	for _, t := range transcription.Prediction {
 		if t.Channel == "channel_0" {
-			transcriptionString += person1 + ": " + t.Transcription + "\n"
+			transcriptItems = append(transcriptItems, TranscriptItem{Person: person1, Text: t.Transcription})
 		} else if t.Channel == "channel_1" {
-			transcriptionString += person2 + ": " + t.Transcription + "\n"
+			transcriptItems = append(transcriptItems, TranscriptItem{Person: person1, Text: t.Transcription})
 		}
 	}
-	return transcriptionString, nil
+	return transcriptItems, nil
 }
 
-func ConversationSummary(conf *RecordServiceConfig, conversation string) (string, error) {
+func ConversationSummary(conf *RecordServiceConfig, conversation []TranscriptItem) (string, error) {
+	conversationStr := ""
+	for _, t := range conversation {
+		conversationStr += t.Person + ": " + t.Text + "\n"
+	}
+
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	writer.WriteField("text", conversation)
+	writer.WriteField("text", conversationStr)
 	writer.Close()
 	r, _ := http.NewRequest("POST", "https://api.gladia.io/text/text/conversation-summarization/", body)
 	r.Header.Add("Content-Type", writer.FormDataContentType())

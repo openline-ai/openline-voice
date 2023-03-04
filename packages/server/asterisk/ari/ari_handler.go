@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/CyCoreSystems/ari/v6"
 	"github.com/CyCoreSystems/ari/v6/ext/bridgemon"
 	"github.com/ghettovoice/gosip/sip/parser"
@@ -307,7 +308,10 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 							log.Printf("Error transcribing audio: %v", err)
 						} else {
 							log.Printf("Transcript: %s", script)
-							publisher.SendAnalysis(model.TRANSCRIPT, "text/plain", script)
+							transcriptBytes, err := json.Marshal(script)
+							if err == nil {
+								publisher.SendAnalysis(model.TRANSCRIPT, "application/x-openline-transcript", string(transcriptBytes))
+							}
 							summary, err := ConversationSummary(conf, script)
 							if err != nil {
 								log.Printf("Error summarizing conversation: %v", err)
