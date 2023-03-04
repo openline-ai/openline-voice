@@ -16,7 +16,7 @@ import (
 
 type AudioTranscription struct {
 	Prediction []struct {
-		TimeBegin     int     `json:"time_begin"`
+		TimeBegin     float64     `json:"time_begin"`
 		TimeEnd       float64 `json:"time_end"`
 		Transcription string  `json:"transcription"`
 		Language      string  `json:"language"`
@@ -94,7 +94,7 @@ type AudioTranscription struct {
 			} `json:"original_mediainfo"`
 		} `json:"metadata"`
 		Transcription []struct {
-			TimeBegin     int     `json:"time_begin"`
+			TimeBegin     float64     `json:"time_begin"`
 			TimeEnd       float64 `json:"time_end"`
 			Transcription string  `json:"transcription"`
 			Language      string  `json:"language"`
