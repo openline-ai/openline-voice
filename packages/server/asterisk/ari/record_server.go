@@ -20,6 +20,7 @@ type RtpServer struct {
 	file          *os.File
 	gladiaClient  *GladiaClient
 	vconPublisher *VConEventPublisher
+	conf          *RecordServiceConfig
 }
 
 func (rtpServer RtpServer) ListenForText() {
@@ -45,7 +46,7 @@ func (rtpServer RtpServer) ListenForText() {
 	}
 }
 
-func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher) *RtpServer {
+func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher, conf *RecordServiceConfig) *RtpServer {
 	l, err := net.ListenPacket("udp", listenAddr)
 	if err != nil {
 		log.Fatal(err)
@@ -57,8 +58,9 @@ func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher) *RtpServer {
 		Data:          cd,
 		socket:        l,
 		file:          f,
-		gladiaClient:  NewGladiaClient(48000),
+		gladiaClient:  NewGladiaClient(48000, conf),
 		vconPublisher: publisher,
+		conf:          conf,
 	}
 }
 

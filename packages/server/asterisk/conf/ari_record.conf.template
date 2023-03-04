@@ -1,3 +1,6 @@
 [channels-api]
 service = !CHANNELS_API_SERVICE!
 api-key = !CHANNELS_API_KEY!
+
+[gladia]
+api-key = !GLADIA_API_KEY!

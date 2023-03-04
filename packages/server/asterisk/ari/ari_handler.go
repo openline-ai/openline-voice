@@ -205,8 +205,8 @@ func app(cl ari.Client, h *ari.ChannelHandle, conf *RecordServiceConfig) {
 
 				vconPublisher := NewVConEventPublisher(conf, channelVars.Uuid, channelVars.From, channelVars.To)
 				go vconPublisher.Run()
-				record(cl, h, makeMetaData(IN, channelVars), &counter, vconPublisher)
-				record(cl, h, makeMetaData(OUT, channelVars), &counter, vconPublisher)
+				record(cl, h, makeMetaData(IN, channelVars), &counter, vconPublisher, conf)
+				record(cl, h, makeMetaData(OUT, channelVars), &counter, vconPublisher, conf)
 			}
 
 		case e := <-subHangup.Events():
@@ -226,7 +226,7 @@ func app(cl ari.Client, h *ari.ChannelHandle, conf *RecordServiceConfig) {
 
 }
 
-func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter *int, publisher *VConEventPublisher) {
+func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter *int, publisher *VConEventPublisher, conf *RecordServiceConfig) {
 
 	snoopOptions := &ari.SnoopOptions{
 		App: cl.ApplicationName(),
@@ -242,7 +242,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 		return
 	}
 
-	rtpServer := NewRtpServer(metadata, publisher)
+	rtpServer := NewRtpServer(metadata, publisher, conf)
 
 	log.Printf("%s RTP Server created: %s", metadata.Direction, rtpServer.Address)
 	go rtpServer.Listen()
@@ -300,24 +300,33 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 				rtpServer.Close()
 				*counter--
 				if *counter == 0 {
-					processAudio(metadata.Uuid)
+					audioFile, err := processAudio(metadata.Uuid)
+					if err != nil {
+						script, err := TranscribeAudio(conf, audioFile, partyToString(metadata.From), partyToString(metadata.To))
+						if err != nil {
+							log.Printf("Error transcribing audio: %v", err)
+						} else {
+							log.Printf("Transcript: %s", script)
+						}
+					}
 					publisher.Kill()
 				}
 			}
 		}
 	}()
 }
-func processAudio(callUuid string) error {
-	cmd := exec.Command("sox", "-M", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", "/tmp/"+callUuid+".ogg")
+func processAudio(callUuid string) (string, error) {
+	outputFile := "/tmp/" + callUuid + ".ogg"
+	cmd := exec.Command("sox", "-M", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-in.raw", "-r", "48000", "-e", "signed-integer", "-c", "1", "-B", "-b", "16", "/tmp/"+callUuid+"-out.raw", outputFile)
 	err := cmd.Run()
 	if err != nil {
 		log.Printf("Error running sox: %v", err)
-		return err
+		return "", err
 	} else {
 		log.Printf("Wrote file: /tmp/%s.wav", callUuid)
 		os.Remove("/tmp/" + callUuid + "-in.raw")
 		os.Remove("/tmp/" + callUuid + "-out.raw")
 
 	}
-	return nil
+	return outputFile, nil
 }
