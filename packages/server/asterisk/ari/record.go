@@ -36,6 +36,7 @@ func main() {
 	conf := &RecordServiceConfig{
 		ChannelsApiService: cfg.Section("channels-api").Key("service").String(),
 		ChannelsApiKey:     cfg.Section("channels-api").Key("api-key").String(),
+		GladiaApiKey:       cfg.Section("gladia").Key("api-key").String(),
 	}
 	for {
 		select {

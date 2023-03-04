@@ -30,3 +30,5 @@ spec:
               value: 92c04073-17c3-4e91-8326-516bbd0750a4
             - name: CHANNELS_API_SERVICE
               value: http://channels-api-service.openline.svc.cluster.local:8013
+            - name: GLADIA_API_KEY
+              value: set_me

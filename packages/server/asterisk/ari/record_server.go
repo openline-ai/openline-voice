@@ -20,6 +20,7 @@ type RtpServer struct {
 	file          *os.File
 	gladiaClient  *GladiaClient
 	vconPublisher *VConEventPublisher
+	conf          *RecordServiceConfig
 }
 
 func (rtpServer RtpServer) ListenForText() {
@@ -45,7 +46,7 @@ func (rtpServer RtpServer) ListenForText() {
 	}
 }
 
-func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher) *RtpServer {
+func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher, conf *RecordServiceConfig) *RtpServer {
 	l, err := net.ListenPacket("udp", listenAddr)
 	if err != nil {
 		log.Fatal(err)
@@ -57,8 +58,9 @@ func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher) *RtpServer {
 		Data:          cd,
 		socket:        l,
 		file:          f,
-		gladiaClient:  NewGladiaClient(48000),
+		gladiaClient:  NewGladiaClient(48000, conf),
 		vconPublisher: publisher,
+		conf:          conf,
 	}
 }
 
@@ -67,22 +69,27 @@ func (rtpServer RtpServer) Close() {
 	rtpServer.file.Close()
 	buf := make([]byte, 1920)
 	log.Printf("Flushing remaining audio")
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	time.Sleep(5 * time.Second)
+	for j := 0; j < 30; j++ {
+		if !rtpServer.gladiaClient.Running {
+			log.Println("Websocket closed, breaking out of flush loop")
+			break
+		}
+		for i := 0; i < 50; i++ {
+			if !rtpServer.gladiaClient.Running {
+				log.Println("Websocket closed, breaking out of flush loop")
+				break
+			}
+			rtpServer.gladiaClient.SendAudio(buf)
+			time.Sleep(20 * time.Millisecond)
+		}
+	}
+	log.Printf("Flushing complete")
 	rtpServer.gladiaClient.Close()
 }
 
 func (rtpServer RtpServer) Listen() error {
 	go rtpServer.gladiaClient.ReadText()
+	go rtpServer.gladiaClient.AudioLoop()
 	for {
 		buf := make([]byte, 2000)
 		packetSize, _, err := rtpServer.socket.ReadFrom(buf)
