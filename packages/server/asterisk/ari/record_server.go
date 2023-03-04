@@ -67,17 +67,13 @@ func (rtpServer RtpServer) Close() {
 	rtpServer.file.Close()
 	buf := make([]byte, 1920)
 	log.Printf("Flushing remaining audio")
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	rtpServer.gladiaClient.SendAudio(buf)
-	time.Sleep(5 * time.Second)
+	for j := 0; j < 10; j++ {
+		for i := 0; i < 50; i++ {
+			rtpServer.gladiaClient.SendAudio(buf)
+		}
+		time.Sleep(1 * time.Second)
+	}
+	log.Printf("Flushing complete")
 	rtpServer.gladiaClient.Close()
 }
 
