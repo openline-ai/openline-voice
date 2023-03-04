@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"golang.org/x/net/websocket"
 	"log"
+	"time"
 )
 
 type gladiaPayload struct {
@@ -14,12 +15,13 @@ type gladiaPayload struct {
 }
 
 type GladiaClient struct {
-	conn        *websocket.Conn
-	currentText string
-	channel     chan string
-	completed   chan interface{}
-	bytes       *bytes.Buffer
-	sampleRate  int
+	conn         *websocket.Conn
+	currentText  string
+	channel      chan string
+	audioChannel chan []byte
+	completed    chan interface{}
+	bytes        *bytes.Buffer
+	sampleRate   int
 }
 
 func swapBytes(b []byte) []byte {
@@ -28,8 +30,7 @@ func swapBytes(b []byte) []byte {
 	}
 	return b
 }
-
-func (g *GladiaClient) SendAudio(payload []byte) {
+func (g *GladiaClient) processPacket(payload []byte) {
 	g.bytes.Write(payload)
 	if g.bytes.Len() >= 15000 {
 		msgBytes := make([]byte, 15000)
@@ -41,6 +42,30 @@ func (g *GladiaClient) SendAudio(payload []byte) {
 		//log.Printf("Sending audio: %v", string(msg))
 		g.conn.Write(msg)
 	}
+}
+
+func (g *GladiaClient) AudioLoop() {
+	log.Printf("Starting AudioLoop")
+	silence := make([]byte, 1920)
+	nextPacket := time.Now().Add(20 * time.Second) // don't generate silence until first packet arrives
+	for {
+		select {
+		case <-time.After(nextPacket.Sub(time.Now())):
+			log.Printf("Silence detected!")
+			g.processPacket(silence)
+			nextPacket = time.Now().Add(20 * time.Millisecond)
+		case payload := <-g.audioChannel:
+			nextPacket = time.Now().Add(25 * time.Millisecond) // allow 5 seconds of jitter
+			g.processPacket(payload)
+		case <-g.completed:
+			log.Printf("Shutting down AudioLoop")
+			return
+		}
+	}
+}
+
+func (g *GladiaClient) SendAudio(payload []byte) {
+
 }
 
 func (g *GladiaClient) ReadText() {

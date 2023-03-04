@@ -83,6 +83,7 @@ func (rtpServer RtpServer) Close() {
 
 func (rtpServer RtpServer) Listen() error {
 	go rtpServer.gladiaClient.ReadText()
+	go rtpServer.gladiaClient.AudioLoop()
 	for {
 		buf := make([]byte, 2000)
 		packetSize, _, err := rtpServer.socket.ReadFrom(buf)
