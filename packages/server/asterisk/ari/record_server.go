@@ -67,7 +67,7 @@ func (rtpServer RtpServer) Close() {
 	rtpServer.file.Close()
 	buf := make([]byte, 1920)
 	log.Printf("Flushing remaining audio")
-	for j := 0; j < 10; j++ {
+	for j := 0; j < 30; j++ {
 		for i := 0; i < 50; i++ {
 			rtpServer.gladiaClient.SendAudio(buf)
 			time.Sleep(20 * time.Millisecond)
