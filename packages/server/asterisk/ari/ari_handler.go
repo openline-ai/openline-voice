@@ -303,7 +303,7 @@ func record(cl ari.Client, h *ari.ChannelHandle, metadata *CallMetadata, counter
 				if *counter == 0 {
 					audioFile, err := processAudio(metadata.Uuid)
 					if err == nil {
-						script, err := TranscribeAudio(conf, audioFile, partyToString(metadata.From), partyToString(metadata.To))
+						script, err := TranscribeAudio(conf, audioFile, metadata.From, metadata.To)
 						if err != nil {
 							log.Printf("Error transcribing audio: %v", err)
 						} else {
