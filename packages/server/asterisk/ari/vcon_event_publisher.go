@@ -31,7 +31,6 @@ type VConEventPublisher struct {
 	uuid            string
 	first           bool
 	parties         []*model.VConParty
-	transcript      []string
 }
 
 func NewVConEventPublisher(conf *RecordServiceConfig, uuid string, from *model.VConParty, to *model.VConParty) *VConEventPublisher {
@@ -43,7 +42,6 @@ func NewVConEventPublisher(conf *RecordServiceConfig, uuid string, from *model.V
 		uuid:            uuid,
 		first:           true,
 		parties:         []*model.VConParty{from, to},
-		transcript:      make([]string, 0),
 	}
 }
 
@@ -62,7 +60,7 @@ func (v *VConEventPublisher) SendAnalysis(analysisType model.VConAnalysisType, c
 	}
 }
 
-func partyToString(p *model.VConParty) string {
+func PartyToString(p *model.VConParty) string {
 	if p.Name != nil {
 		return *p.Name
 	} else if p.Mailto != nil {
@@ -157,7 +155,6 @@ func (v *VConEventPublisher) Run() {
 			} else {
 				vconf.Dialog[0].Parties = []int64{1, 0}
 			}
-			v.transcript = append(v.transcript, partyToString(message.Sender)+": "+message.Message)
 			v.publish(vconf)
 		case analysis := <-v.analysisChannel:
 			vconf := &model.VCon{}

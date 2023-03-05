@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/openline-ai/openline-oasis/packages/server/channels-api/model"
 	"golang.org/x/net/websocket"
 	"io"
 	"log"
@@ -131,8 +132,8 @@ type GladiaClient struct {
 }
 
 type TranscriptItem struct {
-	Person string `json:"party"`
-	Text   string `json:"text"`
+	Party *model.VConParty `json:"party"`
+	Text  string           `json:"text"`
 }
 
 func swapBytes(b []byte) []byte {
@@ -204,7 +205,7 @@ func (g *GladiaClient) Close() {
 	g.conn.Close()
 }
 
-func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string, person2 string) ([]TranscriptItem, error) {
+func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 *model.VConParty, person2 *model.VConParty) ([]TranscriptItem, error) {
 	file, _ := os.Open(filename)
 	defer file.Close()
 	body := &bytes.Buffer{}
@@ -247,9 +248,9 @@ func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string,
 	transcriptItems := make([]TranscriptItem, 0)
 	for _, t := range transcription.Prediction {
 		if t.Channel == "channel_0" {
-			transcriptItems = append(transcriptItems, TranscriptItem{Person: person1, Text: t.Transcription})
+			transcriptItems = append(transcriptItems, TranscriptItem{Party: person1, Text: t.Transcription})
 		} else if t.Channel == "channel_1" {
-			transcriptItems = append(transcriptItems, TranscriptItem{Person: person2, Text: t.Transcription})
+			transcriptItems = append(transcriptItems, TranscriptItem{Party: person2, Text: t.Transcription})
 		}
 	}
 	return transcriptItems, nil
@@ -258,7 +259,7 @@ func TranscribeAudio(conf *RecordServiceConfig, filename string, person1 string,
 func ConversationSummary(conf *RecordServiceConfig, conversation []TranscriptItem) (string, error) {
 	conversationStr := ""
 	for _, t := range conversation {
-		conversationStr += t.Person + ": " + t.Text + "\n"
+		conversationStr += PartyToString(t.Party) + ": " + t.Text + "\n"
 	}
 
 	body := &bytes.Buffer{}

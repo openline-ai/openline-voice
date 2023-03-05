@@ -21,11 +21,17 @@ data "amazon-parameterstore" "channels_api_service" {
   with_decryption = false
 }
 
+data "amazon-parameterstore" "gladia_api_key" {
+  name = "/config/asterisk-server_${var.environment}/gladia_api_key"
+  with_decryption = true
+}
+
 
 # usage example of the data source output
 locals {
   channels_api_key   = data.amazon-parameterstore.channels_api_key.value
   channels_api_service   = data.amazon-parameterstore.channels_api_service.value
+  gladia_api_key   = data.amazon-parameterstore.gladia_api_key.value
 }
 packer {
   required_plugins {
@@ -97,7 +103,7 @@ build {
       "sudo sh -c 'chmod a+x /tmp/asterisk/scripts/asterisk_network_setup.sh'",
       "sudo sh -c 'cp -v /tmp/asterisk/scripts/asterisk_config.sh /usr/sbin/'",
       "sudo sh -c 'chmod a+x /tmp/asterisk/scripts/asterisk_config.sh'",
-      "sudo sh -c 'CHANNELS_API_SERVICE=\"${local.channels_api_service}\" CHANNELS_API_KEY=\"${local.channels_api_key}\"  /usr/sbin/asterisk_config.sh'",
+      "sudo sh -c 'CHANNELS_API_SERVICE=\"${local.channels_api_service}\" CHANNELS_API_KEY=\"${local.channels_api_key}\" GLADIA_API_KEY=\"${local.gladia_api_key}\"  /usr/sbin/asterisk_config.sh'",
       "sudo sh -c 'mv /tmp/asterisk/scripts/asterisk.service /etc/systemd/system'",
       "sudo sh -c 'chmod 644 /etc/systemd/system/asterisk.service'",
       "sudo sh -c 'mv /tmp/asterisk/scripts/asterisk_ari.service /etc/systemd/system'",
