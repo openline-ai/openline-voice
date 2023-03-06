@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"time"
 )
 
 const listenAddr = "127.0.0.1:0"
@@ -67,23 +66,25 @@ func NewRtpServer(cd *CallMetadata, publisher *VConEventPublisher, conf *RecordS
 func (rtpServer RtpServer) Close() {
 	rtpServer.socket.Close()
 	rtpServer.file.Close()
-	buf := make([]byte, 1920)
-	log.Printf("Flushing remaining audio")
-	for j := 0; j < 30; j++ {
-		if !rtpServer.gladiaClient.Running {
-			log.Println("Websocket closed, breaking out of flush loop")
-			break
-		}
-		for i := 0; i < 50; i++ {
+	/*
+		buf := make([]byte, 1920)
+		log.Printf("Flushing remaining audio")
+		for j := 0; j < 30; j++ {
 			if !rtpServer.gladiaClient.Running {
 				log.Println("Websocket closed, breaking out of flush loop")
 				break
 			}
-			rtpServer.gladiaClient.SendAudio(buf)
-			time.Sleep(20 * time.Millisecond)
+			for i := 0; i < 50; i++ {
+				if !rtpServer.gladiaClient.Running {
+					log.Println("Websocket closed, breaking out of flush loop")
+					break
+				}
+				rtpServer.gladiaClient.SendAudio(buf)
+				time.Sleep(20 * time.Millisecond)
+			}
 		}
-	}
-	log.Printf("Flushing complete")
+		log.Printf("Flushing complete")
+	*/
 	rtpServer.gladiaClient.Close()
 }
 
