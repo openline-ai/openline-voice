@@ -47,7 +47,7 @@ locals {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "asterisk-server-ami"
+  ami_name      = "asterisk-server-ami_${var.environment}"
   instance_type = "t2.micro"
   region        = "${var.region}"
   source_ami_filter {
