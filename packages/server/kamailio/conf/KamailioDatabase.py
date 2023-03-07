@@ -47,9 +47,9 @@ class KamailioDatabase:
     def find_e164_mapping(self, e164:str, carrier:str):
         self.test_connection()
         with self.connection.cursor() as cur:
-            cur.execute("SELECT sipuri FROM openline_number_mapping WHERE e164=%s AND carrier_name=%s", (e164, carrier))
+            cur.execute("SELECT sipuri, phoneuri FROM openline_number_mapping WHERE e164=%s AND carrier_name=%s", (e164, carrier))
             record = cur.fetchone()
             if record is not None:
-                return {"sipuri": record[0]}
+                return {"sipuri": record[0], "phoneuri": record[1]}
         return None
 

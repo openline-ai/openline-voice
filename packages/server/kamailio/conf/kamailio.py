@@ -138,15 +138,19 @@ class kamailio:
             return self.ksr_route_location(msg)
 
         #Everything after this point should be WEBRTC
-        if not KSR.is_WS():
-            KSR.sl.sl_send_reply(403, "Request Not Allowed")
-            return 1
+        #if not KSR.is_WS():
+        #    KSR.sl.sl_send_reply(403, "Request Not Allowed")
+        #    return 1
 
         self.ksr_enable_tracing(msg)
 
         # check if it is an authenticated
-        if self.ksr_route_auth(msg) == -255:
-            return 1
+        if KSR.is_WS():
+            if self.ksr_route_webrtc_auth(msg) == -255:
+                return 1
+        else:
+            if self.ksr_route_sip_auth(msg) == -255:
+                return 1
 
         # handle registrations
         if self.ksr_route_registrar(msg)==-255 :
@@ -155,8 +159,16 @@ class kamailio:
         return self.ksr_route_from_webrtc(msg)
 
 
-    def ksr_route_auth(self, msg):
+    def ksr_route_webrtc_auth(self, msg):
         if KSR.auth_ephemeral.autheph_check("openline.ai") < 0:
+            KSR.auth.auth_challenge("openline.ai", 1)
+            return -255
+        #auth passed, yay!
+        KSR.auth.consume_credentials()
+        return 1
+
+    def ksr_route_sip_auth(self, msg):
+        if KSR.auth_db.auth_check("openline.ai", "kamailio_subscriber",1) < 0:
             KSR.auth.auth_challenge("openline.ai", 1)
             return -255
         #auth passed, yay!
@@ -167,9 +179,8 @@ class kamailio:
     def ksr_route_relay(self, msg):
         # enable additional event routes for forwarded requests
         # - serial forking, RTP relaying handling, a.s.o.
-        if KSR.is_method_in("IBSU"):
-            if KSR.tm.t_is_set("branch_route") < 0:
-                KSR.tm.t_on_branch("ksr_branch_manage")
+       # if KSR.is_method_in("IBSU"):
+       #     if KSR.tm.t_is_set("branch_route") < 0:
 
         if KSR.is_method_in("ISU"):
             if KSR.tm.t_is_set("onreply_route") < 0:
@@ -236,7 +247,7 @@ class kamailio:
                 KSR.rr.record_route()
             elif KSR.is_REFER() :
                 # check if it is an authenticated
-                if self.ksr_route_auth(msg) == -255:
+                if self.ksr_route_webrtc_auth(msg) == -255:
                     return 1
                 self.ksr_route_update_refer(msg)
             self.ksr_route_relay(msg)
@@ -255,7 +266,6 @@ class kamailio:
 
         KSR.sl.sl_send_reply(404, "Not here")
         return -255
-
 
     def ksr_route_update_refer(self, msg):
         dest = KSR.pv.gete("$(hdr(Refer-To){nameaddr.uri})")
@@ -303,7 +313,7 @@ class kamailio:
         KSR.tm.t_newtran()
 
         self.log_info("Checking if " + home_uri + " is local\n")
-        if not KSR.is_myself(home_uri):
+        if not KSR.is_myself(home_uri) and home_uri != "sip:":
             self.log_info(home_uri + " is not local routing to home\n")
             KSR.pv.sets("$ru", orig_ruri)
             KSR.pv.sets("$fsn", "internal")
@@ -391,9 +401,6 @@ class kamailio:
         KSR.pv.sets("$avp(uuid)", str(uuid.uuid4()))
         self.log_info("From WebRTC: Assigning call a UUID callid=%s from=%s to=%s\n" %(KSR.pv.gete("$ci"), KSR.pv.gete("$fu"), KSR.pv.gete("$tU")))
 
-        KSR.hdr.remove("X-Openline-UUID")
-        KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$avp(uuid)") + "\r\n")
-
         KSR.tm.t_newtran()
         if KSR.pv.gete("$rU") == "echo":
             #route to echo test
@@ -426,10 +433,10 @@ class kamailio:
     # got a call from the carrier, add the carrier ID and route to asterisk
     def ksr_route_from_carrier(self, msg):
         sipuri = None
-        KSR.pv.sets("$avp(uuid)", str(uuid.uuid4()))
+        callUuid = str(uuid.uuid4())
+        KSR.pv.sets("$avp(uuid)", callUuid)
         self.log_info("From Carrier: Assigning call a UUID callid=%s from=%s to=%s\n" %(KSR.pv.gete("$ci"), KSR.pv.gete("$fU"), KSR.pv.gete("$tU")))
         KSR.hdr.remove("X-Openline-UUID")
-        KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$avp(uuid)") + "\r\n")
 
         KSR.tm.t_newtran()
 
@@ -442,29 +449,65 @@ class kamailio:
 
             return -255
 
+        KSR.tm.t_on_branch("ksr_branch_manage")
+
         KSR.hdr.append("X-Openline-Origin-Carrier: " + KSR.pv.gete("$avp(carrier)") + "\r\n")
+        KSR.pv.sets("$xavu("+result['sipuri']+"=>uuid)", KSR.pv.gete("$avp(uuid)"))
+        KSR.pv.sets("$xavu("+result['sipuri']+"=>dest_endpoint)", "webrtc")
+
         KSR.pv.sets("$ru", result['sipuri'])
+        KSR.hdr.remove("X-Openline-Dest-Endpoint-Type")
+        KSR.hdr.remove("X-Openline-UUID")
+        KSR.hdr.remove("X-Openline-Dest-User")
         self.log_info("Routing call to %s\n" % result['sipuri'])
-        return self.ksr_route_asterisk(msg)
 
-    def ksr_route_asterisk(self, msg):
+        if self.ksr_route_asterisk(msg,True) == -255:
+            return -255
+
+        if result['phoneuri'] != "":
+            KSR.pv.sets("$ru", result['phoneuri'])
+            KSR.pv.sets("$xavu(" + result['phoneuri'] + "=>uuid)", KSR.pv.gete("$avp(uuid)") + "-1")
+            KSR.pv.sets("$xavu(" + result['phoneuri'] + "=>dest_endpoint)", "pstn")
+            KSR.pv.sets("$xavu(" + result['phoneuri'] + "=>dest_user)", result['sipuri'])
+
+            KSR.hdr.remove("X-Openline-Dest-Endpoint-Type")
+        if self.ksr_route_asterisk(msg,True) == -255:
+            return -255
+        return self.ksr_route_relay(msg)
+    def ksr_route_asterisk(self, msg, fork=False):
         rc = KSR.dispatcher.ds_select_dst(0, 3)
+        origDest = KSR.pv.gete("$ru")
 
-        KSR.hdr.append("X-Openline-Dest: " + KSR.pv.gete("$ru") + "\r\n")
-        if KSR.pv.gete("$rU") != "echo":
-            KSR.pv.sets("$rU", "transcode")
+        if not fork:
+            if KSR.is_WS():
+                KSR.hdr.append("X-Openline-Endpoint-Type: webrtc\r\n")
+            else:
+                KSR.hdr.append("X-Openline-Endpoint-Type: pstn\r\n")
 
-        if KSR.is_WS():
-            KSR.hdr.append("X-Openline-Endpoint-Type: webrtc\r\n")
+            KSR.hdr.append("X-Openline-Dest: " + origDest + "\r\n")
+            if KSR.pv.gete("$rU") != "echo":
+                KSR.pv.sets("$rU", "transcode")
         else:
-            KSR.hdr.append("X-Openline-Endpoint-Type: pstn\r\n")
+            if KSR.is_WS():
+                KSR.pv.sets("$xavu(" + origDest + "=>endpoint)", "webrtc")
+            else:
+                KSR.pv.sets("$xavu(" + origDest + "=>endpoint)", "pstn")
+            KSR.pv.sets("$xavu(" + origDest + "=>dest)", origDest)
+            if KSR.pv.gete("$rU") != "echo":
+                KSR.pv.sets("$xavu(" + origDest + "=>set_ruri_user)", "transcode")
+            KSR.info("ksr_route_asterisk: Forking to %s" % origDest)
+            self.print_xavp_vars(origDest)
 
         if rc < 0:
             KSR.tm.t_send_reply(503, "No Media Servers Available")
             return -255
 
         self.log_info("Routing call to asterisk (%s)\n"%(KSR.pv.gete("$nh(d)")))
-        self.ksr_route_relay(msg)
+        if not fork:
+            self.ksr_route_relay(msg)
+        else:
+            KSR.corex.append_branch()
+
         return 1
 
     # Caller NAT detection
@@ -525,12 +568,39 @@ class kamailio:
         self.ksr_route_relay(msg)
         return -255
 
+    def print_xavp_vars(self, origDest):
+        KSR.info("Variables for " + origDest + ":\n")
+        KSR.info("X-Openline-UUID: " + KSR.pv.gete("$xavu(" + origDest + "=>uuid)") + "\r\n")
+        KSR.info("X-Openline-Dest-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_endpoint)") + "\r\n")
+        KSR.info("X-Openline-Dest-User: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_user)") + "\r\n")
+        KSR.info("X-Openline-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>endpoint)") + "\r\n")
+        KSR.info("X-Openline-Dest: " + KSR.pv.gete("$xavu(" + origDest + "=>dest)") + "\r\n")
+        KSR.info("Set RURI USer " + KSR.pv.gete("$xavu(" + origDest + "=>set_ruri_user)"))
 
     # Manage outgoing branches
     # -- equivalent of branch_route[...]{}
     def ksr_branch_manage(self, msg):
-        KSR.dbg("new branch ["+ str(KSR.pv.get("$T_branch_idx"))
-                    + "] to "+ KSR.pv.get("$ru") + "\n")
+
+        origDest = KSR.pv.gete("$ru")
+        KSR.info("new branch ["+ str(KSR.pv.get("$T_branch_idx"))
+                    + "] to "+ origDest  +"\n")
+        self.print_xavp_vars(origDest)
+        KSR.hdr.remove("X-Openline-UUID")
+        self.cleanup_headers(msg)
+        KSR.textopsx.msg_apply_changes()
+        if KSR.pv.gete("$xavu(" + origDest + "=>uuid)"):
+            KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$xavu(" + origDest + "=>uuid)") + "\r\n")
+        if KSR.pv.gete("$xavu(" + origDest + "=>dest_endpoint)"):
+            KSR.hdr.append("X-Openline-Dest-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_endpoint)") + "\r\n")
+        if KSR.pv.gete("$xavu(" + origDest + "=>dest_user)"):
+            KSR.hdr.append("X-Openline-Dest-User: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_user)") + "\r\n")
+        if KSR.pv.gete("$xavu(" + origDest + "=>endpoint)"):
+            KSR.hdr.append("X-Openline-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>endpoint)") + "\r\n")
+        if KSR.pv.gete("$xavu(" + origDest + "=>dest)"):
+            KSR.hdr.append("X-Openline-Dest: " + KSR.pv.gete("$xavu(" + origDest + "=>dest)") + "\r\n")
+        if KSR.pv.gete("$xavu(" + origDest + "=>set_ruri_user)"):
+            KSR.pv.sets("$rU", KSR.pv.gete("$xavu(" + origDest + "=>set_ruri_user)"))
+
         self.ksr_route_natmanage(msg)
         return 1
 
@@ -581,7 +651,7 @@ class kamailio:
         KSR.set_reply_close()
         KSR.set_reply_no_connect()
         if KSR.pv.get("$Rp") != 8080:
-            KSR.xhttp.xhttp_reply(403, "Forbidden", "", "")
+            KSR.xhttp.xhttp_reply(403, "Forbidden", "" "")
             return -255
 
         if re.search("websocket", KSR.pv.getw("$hdr(Upgrade)").lower()) is not None and re.search("upgrade", KSR.pv.getw("$hdr(Connection)").lower()) is not None and re.search("GET", KSR.pv.getw("$rm")) is not None :
