@@ -112,7 +112,8 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		toStr := uri.User().String() + "@" + uri.Host()
 		toId.Mailto = &toStr
 	} else if toUser != "" {
-		toId.Mailto = &toUser
+		base := toUser[4:]
+		toId.Mailto = &base
 	} else {
 		toStr := uri.User().String()
 		toId.Tel = &toStr
