@@ -93,8 +93,7 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 	toId := &model.VConParty{}
 	toUser, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-Dest-User)")
 	if err != nil {
-		log.Printf("Missing channel var PJSIP_HEADER(read,X-Openline-Dest-User): %v", err)
-		return nil, err
+		toUser = ""
 	}
 
 	to, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-Dest)")
