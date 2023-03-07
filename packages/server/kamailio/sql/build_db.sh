@@ -1,7 +1,7 @@
 #!/bin/bash
 
 NAMESPACE_NAME="voice-dev"
-FILES="standard-create.sql permissions-create.sql carriers.sql"
+FILES="standard-create.sql permissions-create.sql auth_db.sql carriers.sql"
 if [ "x$1" == "xlocal-kube" ]; then
   while [ -z "$pod" ]; do
     pod=$(kubectl get pods -n $NAMESPACE_NAME|grep voice-postgres|grep Running| cut -f1 -d ' ')

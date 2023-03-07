@@ -86,12 +86,15 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		fromId.Mailto = &fromIdStr
 
 	} else {
-
 		fromIdStr := uri.User().String()
 		fromId.Tel = &fromIdStr
 	}
 
 	toId := &model.VConParty{}
+	toUser, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-Dest-User)")
+	if err != nil {
+		toUser = ""
+	}
 
 	to, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-Dest)")
 	if err != nil {
@@ -99,15 +102,18 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		return nil, err
 	}
 
-	uri, err = parser.ParseUri(to)
-	if err != nil {
-		log.Printf("Error parsing To header: %v", err)
-		return nil, err
-	}
-
 	if endpointName == "webrtc" {
+		uri, err = parser.ParseUri(to)
+		if err != nil {
+			log.Printf("Error parsing To header: %v", err)
+			return nil, err
+		}
+
 		toStr := uri.User().String() + "@" + uri.Host()
 		toId.Mailto = &toStr
+	} else if toUser != "" {
+		base := toUser[4:]
+		toId.Mailto = &base
 	} else {
 		toStr := uri.User().String()
 		toId.Tel = &toStr

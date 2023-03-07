@@ -4550,6 +4550,331 @@ class Textops:
 			return 1
 		return node
 
+class Textopsx:
+	def msg_apply_changes(self) -> int:
+		print("Calling %s" % ("textopsx.msg_apply_changes"))
+		if "msg_apply_changes" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['msg_apply_changes']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def msg_set_buffer(self, param0: str) -> int:
+		print("Calling %s, %s" % ("textopsx.msg_set_buffer", param0))
+		if "msg_set_buffer" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['msg_set_buffer']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def change_reply_status(self, param0: int, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.change_reply_status", param0, param1))
+		if "change_reply_status" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['change_reply_status']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def remove_body(self) -> int:
+		print("Calling %s" % ("textopsx.remove_body"))
+		if "remove_body" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['remove_body']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def change_reply_status_code(self, param0: int) -> int:
+		print("Calling %s, %s" % ("textopsx.change_reply_status_code", param0))
+		if "change_reply_status_code" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['change_reply_status_code']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def keep_hf(self) -> int:
+		print("Calling %s" % ("textopsx.keep_hf"))
+		if "keep_hf" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['keep_hf']
+		if isinstance(node, types.FunctionType):
+			return node()
+		return node
+
+	def keep_hf_re(self, param0: str) -> int:
+		print("Calling %s, %s" % ("textopsx.keep_hf_re", param0))
+		if "keep_hf_re" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['keep_hf_re']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def fnmatch(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.fnmatch", param0, param1))
+		if "fnmatch" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['fnmatch']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def fnmatch_ex(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("textopsx.fnmatch_ex", param0, param1, param2))
+		if "fnmatch_ex" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['fnmatch_ex']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def append_hf_value(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.append_hf_value", param0, param1))
+		if "append_hf_value" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['append_hf_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def insert_hf_value(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.insert_hf_value", param0, param1))
+		if "insert_hf_value" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['insert_hf_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def assign_hf_value(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.assign_hf_value", param0, param1))
+		if "assign_hf_value" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['assign_hf_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def assign_hf_value2(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.assign_hf_value2", param0, param1))
+		if "assign_hf_value2" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['assign_hf_value2']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def remove_hf_value(self, param0: str) -> int:
+		print("Calling %s, %s" % ("textopsx.remove_hf_value", param0))
+		if "remove_hf_value" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['remove_hf_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def remove_hf_value2(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.remove_hf_value2", param0, param1))
+		if "remove_hf_value2" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['remove_hf_value2']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def include_hf_value(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.include_hf_value", param0, param1))
+		if "include_hf_value" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['include_hf_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def exclude_hf_value(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.exclude_hf_value", param0, param1))
+		if "exclude_hf_value" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['exclude_hf_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def hf_value_exists(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("textopsx.hf_value_exists", param0, param1))
+		if "hf_value_exists" not in _mock_data['textopsx']:
+			return 1
+		node = _mock_data['textopsx']['hf_value_exists']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
 class Siputils:
 	def has_totag(self) -> int:
 		print("Calling %s" % ("siputils.has_totag"))
@@ -5878,6 +6203,61 @@ class Auth:
 			return node
 		if str(param0) in node:
 			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+class Auth_db:
+	def auth_check(self, param0: str, param1: str, param2: int) -> int:
+		print("Calling %s, %s, %s, %s" % ("auth_db.auth_check", param0, param1, param2))
+		if "auth_check" not in _mock_data['auth_db']:
+			return 1
+		node = _mock_data['auth_db']['auth_check']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def is_subscriber(self, param0: str, param1: str, param2: int) -> int:
+		print("Calling %s, %s, %s, %s" % ("auth_db.is_subscriber", param0, param1, param2))
+		if "is_subscriber" not in _mock_data['auth_db']:
+			return 1
+		node = _mock_data['auth_db']['is_subscriber']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
 		else:
 			return 1
 		return node
@@ -7961,6 +8341,7 @@ pvx = Pvx()
 maxfwd = Maxfwd()
 registrar = Registrar()
 textops = Textops()
+textopsx = Textopsx()
 siputils = Siputils()
 xlog = Xlog()
 sanity = Sanity()
@@ -7973,6 +8354,7 @@ websocket = Websocket()
 nathelper = Nathelper()
 app_python3 = App_python3()
 auth = Auth()
+auth_db = Auth_db()
 auth_ephemeral = Auth_ephemeral()
 dispatcher = Dispatcher()
 uac = Uac()
@@ -7991,6 +8373,7 @@ _mock_data['pvx'] = {}
 _mock_data['maxfwd'] = {}
 _mock_data['registrar'] = {}
 _mock_data['textops'] = {}
+_mock_data['textopsx'] = {}
 _mock_data['siputils'] = {}
 _mock_data['xlog'] = {}
 _mock_data['sanity'] = {}
@@ -8003,6 +8386,7 @@ _mock_data['websocket'] = {}
 _mock_data['nathelper'] = {}
 _mock_data['app_python3'] = {}
 _mock_data['auth'] = {}
+_mock_data['auth_db'] = {}
 _mock_data['auth_ephemeral'] = {}
 _mock_data['dispatcher'] = {}
 _mock_data['uac'] = {}
