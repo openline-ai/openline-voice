@@ -131,15 +131,22 @@ class MyTestCase(unittest.TestCase):
         ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
         ksr_utils.pvar_set("$Rp", 5060) #pstn is SIP, not WS
         ksr_relay_called = False
-
+        ksr_branch_called = False
         def allow_source_address(mode: int):
             ksr_utils.pvar_set("$avp(carrier)", "test_carrier")
             return 1
+
+        def my_t_on_branch():
+            nonlocal ksr_branch_called
+            ksr_branch_called = True
+            return 1
         def my_relay():
             nonlocal ksr_relay_called
+            nonlocal ksr_branch_called
             print("Inside t_relay()\n")
             self.assertEqual(ksr_utils.pvar_get("$nh(u)"), "sip:dispatcher_group_0")
             ksr_relay_called = True
+            k.ksr_branch_manage(None)
             return 1
 
         KSR._mock_data["tm"]["t_relay"] = my_relay
@@ -157,6 +164,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(carrier,"test_carrier", "Incorrect carrier key lookup in database")
 
             return {"sipuri": 'sip:AgentSmith@agent.openline.ai',
+                     "phoneuri": '',
                     }
         k.kamailioDB._mock['find_e164_mapping'] = mock_e164_mapping
 

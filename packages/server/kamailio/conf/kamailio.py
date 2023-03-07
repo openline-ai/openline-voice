@@ -484,6 +484,7 @@ class kamailio:
             else:
                 KSR.hdr.append("X-Openline-Endpoint-Type: pstn\r\n")
 
+            KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$avp(uuid)") + "\r\n")
             KSR.hdr.append("X-Openline-Dest: " + origDest + "\r\n")
             if KSR.pv.gete("$rU") != "echo":
                 KSR.pv.sets("$rU", "transcode")
@@ -586,7 +587,10 @@ class kamailio:
                     + "] to "+ origDest  +"\n")
         self.print_xavp_vars(origDest)
         KSR.hdr.remove("X-Openline-UUID")
-        self.cleanup_headers(msg)
+        KSR.hdr.remove("X-Openline-Dest-Endpoint-Type")
+        KSR.hdr.remove("X-Openline-Dest-User")
+        KSR.hdr.remove("X-Openline-Endpoint-Type")
+        KSR.hdr.remove("X-Openline-Dest")
         KSR.textopsx.msg_apply_changes()
         if KSR.pv.gete("$xavu(" + origDest + "=>uuid)"):
             KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$xavu(" + origDest + "=>uuid)") + "\r\n")

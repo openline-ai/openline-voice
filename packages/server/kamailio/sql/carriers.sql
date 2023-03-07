@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS openline_number_mapping (
     e164 VARCHAR(50) NOT NULL,
     sipuri VARCHAR(250) NOT NULL,
     carrier_name VARCHAR(50) NOT NULL,
-    alias VARCHAR(50) NOT NULL
+    alias VARCHAR(50) NOT NULL,
+    phoneuri VARCHAR(250) NOT NULL DEFAULT ''
 );
 
 CREATE UNIQUE INDEX number_e164_idx ON openline_number_mapping (e164);
