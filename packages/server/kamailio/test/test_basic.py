@@ -171,7 +171,7 @@ class MyTestCase(unittest.TestCase):
 
         k.ksr_request_route(None)
 
-        self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:transcode@agent.openline.ai", "RURI not set to expected destination")  # add assertion here
+        self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:transcode@dispatcher_group_0", "RURI not set to expected destination")  # add assertion here
         self.assertEqual(ksr_utils.pvar_get("$nh(u)"),"sip:dispatcher_group_0", "Dispatcher not invoked to right dispatcher group")
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Endpoint-Type)"),"pstn", "Endpoint Header not set")
 
