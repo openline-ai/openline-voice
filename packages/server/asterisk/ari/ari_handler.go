@@ -75,18 +75,18 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		log.Printf("Missing channel var PJSIP_HEADER(read,From): %v", err)
 		return nil, err
 	}
-	_, uri, _, err := parser.ParseAddressValue(from)
+	_, fromUri, _, err := parser.ParseAddressValue(from)
 	if err != nil {
 		log.Printf("Error parsing From header: %v", err)
 		return nil, err
 	}
 
 	if origEndpointName == "webrtc" {
-		fromIdStr := uri.User().String() + "@" + uri.Host()
+		fromIdStr := fromUri.User().String() + "@" + fromUri.Host()
 		fromId.Mailto = &fromIdStr
 
 	} else {
-		fromIdStr := uri.User().String()
+		fromIdStr := fromUri.User().String()
 		fromId.Tel = &fromIdStr
 	}
 
@@ -102,20 +102,20 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		return nil, err
 	}
 
-	if endpointName == "webrtc" {
-		uri, err = parser.ParseUri(to)
-		if err != nil {
-			log.Printf("Error parsing To header: %v", err)
-			return nil, err
-		}
+	toUri, err := parser.ParseUri(to)
+	if err != nil {
+		log.Printf("Error parsing To header: %v", err)
+		return nil, err
+	}
 
-		toStr := uri.User().String() + "@" + uri.Host()
+	if endpointName == "webrtc" {
+		toStr := toUri.User().String() + "@" + fromUri.Host()
 		toId.Mailto = &toStr
 	} else if toUser != "" {
 		base := toUser[4:]
 		toId.Mailto = &base
 	} else {
-		toStr := uri.User().String()
+		toStr := toUri.User().String()
 		toId.Tel = &toStr
 	}
 

@@ -3,7 +3,7 @@
 ## KSR - the new dynamic object exporting Kamailio functions
 ## Router - the old object exporting Kamailio functions
 ##
-
+import KSR
 ## Relevant remarks:
 ##  * return code -255 is used to propagate the 'exit' behaviour to the
 ##  parent route block function. The alternative is to use the native
@@ -65,6 +65,8 @@ class kamailio:
     # SIP request routing
     # -- equivalent of request_route{}
     def ksr_request_route(self, msg):
+        KSR.pv.seti("$avp(ksr_branch_count)", 1)
+
         # KSR.info("===== request - from kamailio python script\n")
         # KSR.info("===== method [%s] r-uri [%s]\n" % (KSR.pv.get("$rm"),KSR.pv.get("$ru")))
         if KSR.pv.get("$Rp") == 8080 and not KSR.is_WS():
@@ -184,6 +186,7 @@ class kamailio:
 
         if KSR.is_method_in("ISU"):
             if KSR.tm.t_is_set("onreply_route") < 0:
+                KSR.pv.seti("$avp(cancelled_branches)", 0)
                 KSR.tm.t_on_reply("ksr_onreply_manage")
 
 
@@ -305,6 +308,9 @@ class kamailio:
                 return -255
             elif rc == -2:
                 KSR.tm.t_send_reply(405, "Method Not Allowed")
+                return -255
+            else:
+                KSR.err("Error while looking up location %d\n" % rc)
                 return -255
 
         home_ip = KSR.pv.gete("$(xavp(ulrcd[0]=>received){uri.param,home})")
@@ -463,7 +469,7 @@ class kamailio:
 
         if self.ksr_route_asterisk(msg,True) == -255:
             return -255
-
+        KSR.corex.append_branch()
         if result['phoneuri'] != "":
             KSR.pv.sets("$ru", result['phoneuri'])
             KSR.pv.sets("$xavu(" + result['phoneuri'] + "=>uuid)", KSR.pv.gete("$avp(uuid)") + "-1")
@@ -473,6 +479,7 @@ class kamailio:
             KSR.hdr.remove("X-Openline-Dest-Endpoint-Type")
         if self.ksr_route_asterisk(msg,True) == -255:
             return -255
+        KSR.pv.seti("$avp(ksr_branch_count)", 3)
         return self.ksr_route_relay(msg)
     def ksr_route_asterisk(self, msg, fork=False):
         rc = KSR.dispatcher.ds_select_dst(0, 3)
@@ -495,7 +502,10 @@ class kamailio:
                 KSR.pv.sets("$xavu(" + origDest + "=>endpoint)", "pstn")
             KSR.pv.sets("$xavu(" + origDest + "=>dest)", origDest)
             if KSR.pv.gete("$rU") != "echo":
-                KSR.pv.sets("$xavu(" + origDest + "=>set_ruri_user)", "transcode")
+                KSR.pv.sets("$xavu(" + origDest + "=>set_ruri)", "sip:transcode@"+KSR.pv.gete("$nh(d)"))
+            else:
+                KSR.pv.sets("$xavu(" + origDest + "=>set_ruri)", "sip:echo@"+KSR.pv.gete("$nh(d)"))
+
             KSR.info("ksr_route_asterisk: Forking to %s" % origDest)
             self.print_xavp_vars(origDest)
 
@@ -503,11 +513,9 @@ class kamailio:
             KSR.tm.t_send_reply(503, "No Media Servers Available")
             return -255
 
-        self.log_info("Routing call to asterisk (%s)\n"%(KSR.pv.gete("$nh(d)")))
+        self.log_info("Routing call to asterisk (%s) ruri (%s)\n"%(KSR.pv.gete("$nh(d)"), KSR.pv.gete("$ru")))
         if not fork:
             self.ksr_route_relay(msg)
-        else:
-            KSR.corex.append_branch()
 
         return 1
 
@@ -570,20 +578,20 @@ class kamailio:
         return -255
 
     def print_xavp_vars(self, origDest):
-        KSR.info("Variables for " + origDest + ":\n")
-        KSR.info("X-Openline-UUID: " + KSR.pv.gete("$xavu(" + origDest + "=>uuid)") + "\r\n")
-        KSR.info("X-Openline-Dest-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_endpoint)") + "\r\n")
-        KSR.info("X-Openline-Dest-User: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_user)") + "\r\n")
-        KSR.info("X-Openline-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>endpoint)") + "\r\n")
-        KSR.info("X-Openline-Dest: " + KSR.pv.gete("$xavu(" + origDest + "=>dest)") + "\r\n")
-        KSR.info("Set RURI USer " + KSR.pv.gete("$xavu(" + origDest + "=>set_ruri_user)"))
+        self.log_info("Variables for " + origDest + ":\n")
+        self.log_info("X-Openline-UUID: " + KSR.pv.gete("$xavu(" + origDest + "=>uuid)") + "\r\n")
+        self.log_info("X-Openline-Dest-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_endpoint)") + "\r\n")
+        self.log_info("X-Openline-Dest-User: " + KSR.pv.gete("$xavu(" + origDest + "=>dest_user)") + "\r\n")
+        self.log_info("X-Openline-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>endpoint)") + "\r\n")
+        self.log_info("X-Openline-Dest: " + KSR.pv.gete("$xavu(" + origDest + "=>dest)") + "\r\n")
+        self.log_info("X-Openline-Set-RURI: " + KSR.pv.gete("$xavu(" + origDest + "=>set_ruri)") + "\r\n")
 
     # Manage outgoing branches
     # -- equivalent of branch_route[...]{}
     def ksr_branch_manage(self, msg):
 
         origDest = KSR.pv.gete("$ru")
-        KSR.info("new branch ["+ str(KSR.pv.get("$T_branch_idx"))
+        self.log_info("new branch ["+ str(KSR.pv.get("$T_branch_idx"))
                     + "] to "+ origDest  +"\n")
         self.print_xavp_vars(origDest)
         KSR.hdr.remove("X-Openline-UUID")
@@ -591,7 +599,6 @@ class kamailio:
         KSR.hdr.remove("X-Openline-Dest-User")
         KSR.hdr.remove("X-Openline-Endpoint-Type")
         KSR.hdr.remove("X-Openline-Dest")
-        KSR.textopsx.msg_apply_changes()
         if KSR.pv.gete("$xavu(" + origDest + "=>uuid)"):
             KSR.hdr.append("X-Openline-UUID: " + KSR.pv.gete("$xavu(" + origDest + "=>uuid)") + "\r\n")
         if KSR.pv.gete("$xavu(" + origDest + "=>dest_endpoint)"):
@@ -602,9 +609,10 @@ class kamailio:
             KSR.hdr.append("X-Openline-Endpoint-Type: " + KSR.pv.gete("$xavu(" + origDest + "=>endpoint)") + "\r\n")
         if KSR.pv.gete("$xavu(" + origDest + "=>dest)"):
             KSR.hdr.append("X-Openline-Dest: " + KSR.pv.gete("$xavu(" + origDest + "=>dest)") + "\r\n")
-        if KSR.pv.gete("$xavu(" + origDest + "=>set_ruri_user)"):
-            KSR.pv.sets("$rU", KSR.pv.gete("$xavu(" + origDest + "=>set_ruri_user)"))
+        if KSR.pv.gete("$xavu(" + origDest + "=>set_ruri)"):
+            KSR.pv.sets("$ru", KSR.pv.gete("$xavu(" + origDest + "=>set_ruri)"))
 
+        self.log_info("Route new branch: next hop is " + KSR.pv.gete("$nh(u)") + "\n")
         self.ksr_route_natmanage(msg)
         return 1
 
@@ -612,11 +620,39 @@ class kamailio:
     # Manage incoming replies
     # -- equivalent of onreply_route[...]{}
     def ksr_onreply_manage(self, msg):
-        KSR.dbg("incoming reply\n")
         scode = KSR.pv.get("$rs")
+        branchId = KSR.pv.gete("$T_branch_idx")
+        self.log_info("incoming reply %d on branch %d\n"  % (scode, branchId))
+
         if scode>100 and scode<299 :
             self.ksr_route_natmanage(msg)
-
+            KSR.pv.sets("$avp(answered)", "yes")
+        #hack for demo
+        # if scode == 183:
+        #     numBranches = KSR.pv.gete("$avp(ksr_branch_count)")
+        #     if numBranches > 1 and branchId != 1:
+        #         self.log_info("dropping early media\n")
+        #         KSR.set_drop()
+        #
+        #
+        # if scode > 399:
+        #     if KSR.pv.gete("$avp(answered)") == "yes":
+        #         self.log_info("call already answered dropping error reply\n")
+        #         KSR.set_drop()
+        #         return 1
+        #
+        #     numBranches = KSR.pv.gete("$avp(ksr_branch_count)")
+        #     cancelledBranches = KSR.pv.gete("$avp(cancelled_branches)")
+        #     self.log_info("numBranches: %s canncelledBranches: %s\n" % (numBranches, cancelledBranches))
+        #     if numBranches - 1 > cancelledBranches:
+        #         KSR.set_drop()
+        #         alreadyCancelled = KSR.pv.gete("$xavu(cancelled=>"+str(KSR.pv.get("$T_branch_idx"))+")")
+        #         if alreadyCancelled != "yes":
+        #             KSR.pv.sets("$xavu(cancelled=>"+str(KSR.pv.get("$T_branch_idx"))+")", "yes")
+        #             KSR.pv.seti("$avp(cancelled_branches)", cancelledBranches + 1)
+        #         else:
+        #             self.log_info("branch already cancelled previously not incrementing\n")
+        #         self.log_info("dropping error response \n")
         return 1
 
     def ksr_onsend_route(self, msg):
