@@ -51,6 +51,7 @@ def ksr_utils_init(_mock_data):
 
 def dispatcher_select_dst(group: int, algo: int):
     pvar_set("$nh(u)", "sip:dispatcher_group_" + str(group))
+    pvar_set("$nh(d)", "dispatcher_group_" + str(group))
     return 1
 def hdr_remove(hdr_key: str):
     global hdr_vals
