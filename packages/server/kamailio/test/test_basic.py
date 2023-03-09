@@ -73,9 +73,14 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNotNone(ksr_utils.pvar_get("$hdr(X-Openline-UUID)"), "Missing UUID Header")
         self.assertTrue(ksr_relay_called, "Call was not routed!")
 
+    def test_INVITE_reformat_number(self):
+        k = kamailio.kamailio()
+
+        result = k.formatInternational("+442038352071", "07810015381")
+        self.assertEqual("+447810015381", result)
     def test_INVITE_from_webrtc_to_pstn(self):
         ksr_utils.pvar_set("$rm", "INVITE")
-        ksr_utils.pvar_set("$ru", "sip:+44075755588858@openline.ai")
+        ksr_utils.pvar_set("$ru", "sip:+4475755588858@openline.ai")
         ksr_utils.pvar_set("$fu", "sip:AgentSmith@agent.openline.ai")
         ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
         ksr_utils.pvar_set("$Rp", 8080)
@@ -121,7 +126,7 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNotNone(ksr_utils.pvar_get("$hdr(X-Openline-UUID)"), "Missing UUID Header")
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-CallerID)"), "+322800000", "CallerID not SET!")
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest-Carrier)"), "test_carrier", "Carrier not SET!")
-        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest)"), "sip:+44075755588858@openline.ai", "X-Openline-Dest not set!")
+        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest)"), "sip:+4475755588858@openline.ai", "X-Openline-Dest not set!")
         self.assertTrue(ksr_relay_called, "Call was not routed!")
 
     def test_INVITE_from_pstn_to_webrtc(self):

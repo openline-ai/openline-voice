@@ -17,7 +17,7 @@ endpoint=webrtc_client
 type=endpoint
 dtls_auto_generate_cert=yes
 webrtc=yes
-context=openline-webrtc
+context=openline
 disallow=all
 allow=opus,alaw,ulaw
 from_domain=openline.ai
@@ -29,7 +29,7 @@ endpoint=pstn_client
 
 [pstn_client]
 type=endpoint
-context=openline-pstn
+context=openline
 disallow=all
 allow=alaw,ulaw
 
