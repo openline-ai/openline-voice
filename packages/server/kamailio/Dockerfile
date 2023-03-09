@@ -6,7 +6,6 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -qq --assum
 RUN echo "deb http://deb.kamailio.org/kamailio55 bullseye main" >   /etc/apt/sources.list.d/kamailio.list
 RUN wget -O- http://deb.kamailio.org/kamailiodebkey.gpg | apt-key add -
 RUN apt-get update && apt-get install -qq --no-install-recommends --no-install-suggests kamailio=5.5.6+bpo11 kamailio-autheph-modules=5.5.6+bpo11 kamailio-berkeley-bin=5.5.6+bpo11 kamailio-cnxcc-modules=5.5.6+bpo11 kamailio-cpl-modules=5.5.6+bpo11 kamailio-extra-modules=5.5.6+bpo11 kamailio-json-modules=5.5.6+bpo11 kamailio-lwsc-modules=5.5.6+bpo11 kamailio-memcached-modules=5.5.6+bpo11 kamailio-mqtt-modules=5.5.6+bpo11 kamailio-outbound-modules=5.5.6+bpo11 kamailio-phonenum-modules=5.5.6+bpo11 kamailio-postgres-modules=5.5.6+bpo11 kamailio-presence-modules=5.5.6+bpo11 kamailio-python3-modules=5.5.6+bpo11 kamailio-rabbitmq-modules=5.5.6+bpo11 kamailio-redis-modules=5.5.6+bpo11 kamailio-sctp-modules=5.5.6+bpo11 kamailio-secsipid-modules=5.5.6+bpo11 kamailio-snmpstats-modules=5.5.6+bpo11 kamailio-systemd-modules=5.5.6+bpo11 kamailio-tls-modules=5.5.6+bpo11 kamailio-utils-modules=5.5.6+bpo11 kamailio-websocket-modules=5.5.6+bpo11 kamailio-xml-modules=5.5.6+bpo11 libpq5 python3-psycopg2 python3-phonenumbers && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip3 install phonenumbers
 
 VOLUME /etc/kamailio
 
