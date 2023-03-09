@@ -365,7 +365,7 @@ class kamailio:
             self.log_info("Number found, checking if PSTN is activated\n")
             self.log_info(
                 "Looking up %s in database\n" % (source))
-            record = self.kamailioDB.find_sipuri_mapping(source, '')
+            record = self.kamailioDB.find_sipuri_mapping(source)
             if record is None:
                 self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
@@ -419,7 +419,7 @@ class kamailio:
         elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
             self.log_info("Number found, checking if PSTN is activated\n")
             self.log_info(
-                "Looking up %s (auth:%s) in database\n" % (KSR.pv.gete("$fu")))
+                "Looking up %s in database\n" % (KSR.pv.gete("$fu")))
             record = self.kamailioDB.find_sipuri_mapping(KSR.pv.gete("$fu"))
             if record is  None:
                 self.log_info("PSTN Not activated, rejecting the call\n")
