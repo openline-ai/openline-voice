@@ -73,6 +73,11 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNotNone(ksr_utils.pvar_get("$hdr(X-Openline-UUID)"), "Missing UUID Header")
         self.assertTrue(ksr_relay_called, "Call was not routed!")
 
+    def test_INVITE_reformat_number(self):
+        k = kamailio.kamailio()
+
+        result = k.formatInternational("+442038352071", "07810015381")
+        self.assertEqual("+447810015381", result)
     def test_INVITE_from_webrtc_to_pstn(self):
         ksr_utils.pvar_set("$rm", "INVITE")
         ksr_utils.pvar_set("$ru", "sip:+44075755588858@openline.ai")

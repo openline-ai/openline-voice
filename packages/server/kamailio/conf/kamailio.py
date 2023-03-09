@@ -16,6 +16,7 @@ import re
 import uuid
 import configparser
 import KamailioDatabase
+import phonenumbers
 
 LOCATION = "kamailio_location"
 
@@ -319,7 +320,7 @@ class kamailio:
         KSR.tm.t_newtran()
 
         self.log_info("Checking if " + home_uri + " is local\n")
-        if not KSR.is_myself(home_uri) and home_uri != "sip:":
+        if not KSR.is_myself(home_uri):
             self.log_info(home_uri + " is not local routing to home\n")
             KSR.pv.sets("$ru", orig_ruri)
             KSR.pv.sets("$fsn", "internal")
@@ -364,7 +365,7 @@ class kamailio:
             self.log_info("Number found, checking if PSTN is activated\n")
             self.log_info(
                 "Looking up %s in database\n" % (source))
-            record = self.kamailioDB.find_sipuri_mapping(source)
+            record = self.kamailioDB.find_sipuri_mapping(source, '')
             if record is None:
                 self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
@@ -418,7 +419,7 @@ class kamailio:
         elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
             self.log_info("Number found, checking if PSTN is activated\n")
             self.log_info(
-                "Looking up %s in database\n" % (KSR.pv.gete("$fu")))
+                "Looking up %s (auth:%s) in database\n" % (KSR.pv.gete("$fu")))
             record = self.kamailioDB.find_sipuri_mapping(KSR.pv.gete("$fu"))
             if record is  None:
                 self.log_info("PSTN Not activated, rejecting the call\n")
@@ -428,13 +429,31 @@ class kamailio:
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: pstn\r\n")
             KSR.hdr.append("X-Openline-Dest-Carrier: " + record['carrier'] + "\r\n")
             KSR.hdr.append("X-Openline-CallerID: " + record['alias'] + "\r\n")
+
+            destNumber = KSR.pv.get("$rU")
+            newDest = self.formatInternational(record['alias'], destNumber)
+
+            if newDest is not None:
+                self.log_info("Rewriting destination number to %s" % (newDest))
+                KSR.pv.sets("$rU", newDest)
+
+
             return self.ksr_route_asterisk(msg)
         else:
             self.log_info("Destination not a number nor is registered")
             KSR.tm.t_send_reply(404, "Destination Not Found")
             return -255
 
-
+    def formatInternational(self, origNumber, destNumber):
+        origNumberInfo = phonenumbers.parse(origNumber, None)
+        if origNumberInfo is not None:
+            regionCode = phonenumbers.region_code_for_number(origNumberInfo)
+            if regionCode is not None:
+                destNumberInfo = phonenumbers.parse(destNumber, regionCode)
+                if destNumberInfo is not None:
+                    destNumber = phonenumbers.format_number(destNumberInfo, phonenumbers.PhoneNumberFormat.E164)
+                    return destNumber
+        return None
 
     # got a call from the carrier, add the carrier ID and route to asterisk
     def ksr_route_from_carrier(self, msg):
@@ -469,8 +488,9 @@ class kamailio:
 
         if self.ksr_route_asterisk(msg,True) == -255:
             return -255
-        KSR.corex.append_branch()
         if result['phoneuri'] != "":
+            KSR.tm.t_set_disable_6xx(1)
+            KSR.corex.append_branch()
             KSR.pv.sets("$ru", result['phoneuri'])
             KSR.pv.sets("$xavu(" + result['phoneuri'] + "=>uuid)", KSR.pv.gete("$avp(uuid)") + "-1")
             KSR.pv.sets("$xavu(" + result['phoneuri'] + "=>dest_endpoint)", "pstn")
@@ -533,6 +553,8 @@ class kamailio:
 
             KSR.setflag(FLT_NATS)
 
+        else:
+            KSR.pv.sets("$avp(RECEIVED)", KSR.pv.gete("$su") + ";home=" + KSR.pv.gete("$Ri"))
         return 1
 
 
