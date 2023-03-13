@@ -70,6 +70,10 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		return nil, err
 	}
 	fromId := &model.VConParty{}
+	fromUser, err := h.GetVariable("PJSIP_HEADER(read,X-Openline-User)")
+	if err != nil {
+		fromUser = ""
+	}
 	from, err := h.GetVariable("PJSIP_HEADER(read,From)")
 	if err != nil {
 		log.Printf("Missing channel var PJSIP_HEADER(read,From): %v", err)
@@ -82,9 +86,13 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 	}
 
 	if origEndpointName == "webrtc" {
-		fromIdStr := fromUri.User().String() + "@" + fromUri.Host()
-		fromId.Mailto = &fromIdStr
-
+		if fromUser != "" {
+			base := fromUser[4:]
+			fromId.Mailto = &base
+		} else {
+			fromIdStr := fromUri.User().String() + "@" + fromUri.Host()
+			fromId.Mailto = &fromIdStr
+		}
 	} else {
 		fromIdStr := fromUri.User().String()
 		fromId.Tel = &fromIdStr

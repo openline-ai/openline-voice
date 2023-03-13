@@ -432,7 +432,7 @@ class kamailio:
             KSR.hdr.append("X-Openline-CallerID: " + record['alias'] + "\r\n")
 
             if fromUrl != record['sipuri']:
-                KSR.hdr.append("X-Openline-Dest-User: " + record['sipuri'] + "\r\n")
+                KSR.hdr.append("X-Openline-User: " + record['sipuri'] + "\r\n")
 
             destNumber = KSR.pv.get("$rU")
             newDest = self.formatInternational(record['alias'], destNumber)
