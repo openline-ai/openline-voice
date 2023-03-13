@@ -119,6 +119,8 @@ func (rtpServer RtpServer) Listen() error {
 		if err != nil {
 			log.Println("Error writing to file:", err)
 		}
-		rtpServer.gladiaClient.SendAudio(rtpPacket.Payload)
+		if rtpServer.gladiaClient != nil {
+			rtpServer.gladiaClient.SendAudio(rtpPacket.Payload)
+		}
 	}
 }
