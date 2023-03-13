@@ -85,14 +85,12 @@ func getChannelVars(h *ari.ChannelHandle) (*ChannelVar, error) {
 		return nil, err
 	}
 
-	if origEndpointName == "webrtc" {
-		if fromUser != "" {
-			base := fromUser[4:]
-			fromId.Mailto = &base
-		} else {
-			fromIdStr := fromUri.User().String() + "@" + fromUri.Host()
-			fromId.Mailto = &fromIdStr
-		}
+	if fromUser != "" {
+		base := fromUser[4:]
+		fromId.Mailto = &base
+	} else if origEndpointName == "webrtc" {
+		fromIdStr := fromUri.User().String() + "@" + fromUri.Host()
+		fromId.Mailto = &fromIdStr
 	} else {
 		fromIdStr := fromUri.User().String()
 		fromId.Tel = &fromIdStr
