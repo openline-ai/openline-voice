@@ -145,8 +145,8 @@ func swapBytes(b []byte) []byte {
 }
 func (g *GladiaClient) processPacket(payload []byte) {
 	g.bytes.Write(payload)
-	if g.bytes.Len() >= 15000 {
-		msgBytes := make([]byte, 15000)
+	if g.bytes.Len() >= 115156 {
+		msgBytes := make([]byte, 115156)
 		_, _ = g.bytes.Read(msgBytes)
 		msgBytes = swapBytes(msgBytes)
 		msgString := base64.StdEncoding.EncodeToString(msgBytes)
@@ -314,7 +314,7 @@ func NewGladiaClient(sampleRate int, conf *RecordServiceConfig) *GladiaClient {
 		audioChannel:   make(chan []byte),
 		completed:      make(chan interface{}),
 		audioCompleted: make(chan interface{}),
-		bytes:          bytes.NewBuffer(make([]byte, 2000)),
+		bytes:          bytes.NewBuffer(make([]byte, 20000)),
 		sampleRate:     sampleRate,
 		conf:           conf,
 		Running:        true,
