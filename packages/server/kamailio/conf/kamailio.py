@@ -408,6 +408,7 @@ class kamailio:
         KSR.pv.sets("$avp(uuid)", str(uuid.uuid4()))
         self.log_info("From WebRTC: Assigning call a UUID callid=%s from=%s to=%s\n" %(KSR.pv.gete("$ci"), KSR.pv.gete("$fu"), KSR.pv.gete("$tU")))
 
+        fromUrl = KSR.pv.gete("$fu")
         KSR.tm.t_newtran()
         if KSR.pv.gete("$rU") == "echo":
             #route to echo test
@@ -419,8 +420,8 @@ class kamailio:
         elif re.search("^[+]?[0-9]+$", KSR.pv.get("$rU")) is not None:
             self.log_info("Number found, checking if PSTN is activated\n")
             self.log_info(
-                "Looking up %s in database\n" % (KSR.pv.gete("$fu")))
-            record = self.kamailioDB.find_sipuri_mapping(KSR.pv.gete("$fu"))
+                "Looking up %s in database\n" % (fromUrl))
+            record = self.kamailioDB.find_sipuri_mapping(fromUrl)
             if record is  None:
                 self.log_info("PSTN Not activated, rejecting the call\n")
                 KSR.tm.t_send_reply(401, "PSTN Calling Not Allowed")
@@ -429,6 +430,9 @@ class kamailio:
             KSR.hdr.append("X-Openline-Dest-Endpoint-Type: pstn\r\n")
             KSR.hdr.append("X-Openline-Dest-Carrier: " + record['carrier'] + "\r\n")
             KSR.hdr.append("X-Openline-CallerID: " + record['alias'] + "\r\n")
+
+            if fromUrl != record['sipuri']:
+                KSR.hdr.append("X-Openline-Dest-User: " + record['sipuri'] + "\r\n")
 
             destNumber = KSR.pv.get("$rU")
             newDest = self.formatInternational(record['alias'], destNumber)
