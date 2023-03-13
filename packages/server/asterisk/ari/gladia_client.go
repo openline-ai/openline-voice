@@ -193,14 +193,14 @@ func (g *GladiaClient) ReadText() {
 			g.Running = false
 			return
 		}
-		transcription := &Prediction{}
+		transcription := &AudioTranscription{}
 		msgBytes := []byte(msg)
 		err = json.Unmarshal(msgBytes, &transcription)
 		if err != nil {
 			log.Printf("ReadText: could not unmarshal response body: %s\n", err)
 			continue
 		}
-		for _, item := range *transcription {
+		for _, item := range transcription.Prediction {
 			g.channel <- item.Transcription
 		}
 	}
