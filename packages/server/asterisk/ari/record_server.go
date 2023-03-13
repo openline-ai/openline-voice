@@ -24,6 +24,10 @@ type RtpServer struct {
 
 func (rtpServer RtpServer) ListenForText() {
 	log.Printf("Started listening for text")
+	if rtpServer.gladiaClient == nil {
+		log.Printf("No GladiaClient, returning")
+		return
+	}
 	var participant []byte
 	var party *model.VConParty
 	if rtpServer.Data.Direction == IN {
@@ -85,12 +89,17 @@ func (rtpServer RtpServer) Close() {
 		}
 		log.Printf("Flushing complete")
 	*/
-	rtpServer.gladiaClient.Close()
+	if rtpServer.gladiaClient != nil {
+		rtpServer.gladiaClient.Close()
+	}
 }
 
 func (rtpServer RtpServer) Listen() error {
-	go rtpServer.gladiaClient.ReadText()
-	go rtpServer.gladiaClient.AudioLoop()
+	if rtpServer.gladiaClient != nil {
+		go rtpServer.gladiaClient.ReadText()
+		go rtpServer.gladiaClient.AudioLoop()
+	}
+
 	for {
 		buf := make([]byte, 2000)
 		packetSize, _, err := rtpServer.socket.ReadFrom(buf)
