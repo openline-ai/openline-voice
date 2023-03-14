@@ -110,8 +110,9 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(sipuri,"sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
             return {"e164": '+328080970',
                     "alias":'+322800000',
-                    "carrier": 'test_carrier'
-                    }
+                    "carrier": 'test_carrier',
+                    "sipuri": 'sip:AgentSmith@agent.openline.ai'
+            }
         k.kamailioDB._mock['find_sipuri_mapping'] = mock_sipuri_mapping
 
 
@@ -241,7 +242,8 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(sipuri,"sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
             return {"e164": '+328080970',
                     "alias": '+322800000',
-                    "carrier": 'test_carrier'
+                    "carrier": 'test_carrier',
+                    "sipuri": 'sip:AgentSmith@agent.openline.ai'
                     }
         k.kamailioDB._mock['find_sipuri_mapping'] = mock_sipuri_mapping
 

@@ -15,16 +15,18 @@ import (
 	"time"
 )
 
+type Prediction []struct {
+	TimeBegin     float64 `json:"time_begin"`
+	TimeEnd       float64 `json:"time_end"`
+	Transcription string  `json:"transcription"`
+	Language      string  `json:"language"`
+	Probability   float64 `json:"probability"`
+	Speaker       string  `json:"speaker"`
+	Channel       string  `json:"channel"`
+}
+
 type AudioTranscription struct {
-	Prediction []struct {
-		TimeBegin     float64 `json:"time_begin"`
-		TimeEnd       float64 `json:"time_end"`
-		Transcription string  `json:"transcription"`
-		Language      string  `json:"language"`
-		Probability   float64 `json:"probability"`
-		Speaker       string  `json:"speaker"`
-		Channel       string  `json:"channel"`
-	} `json:"prediction"`
+	Prediction    `json:"prediction"`
 	PredictionRaw struct {
 		Metadata struct {
 			TotalSpeechDuration         float64 `json:"total_speech_duration"`
@@ -120,7 +122,6 @@ type gladiaPayload struct {
 
 type GladiaClient struct {
 	conn           *websocket.Conn
-	currentText    string
 	channel        chan string
 	audioChannel   chan []byte
 	completed      chan interface{}
@@ -144,8 +145,8 @@ func swapBytes(b []byte) []byte {
 }
 func (g *GladiaClient) processPacket(payload []byte) {
 	g.bytes.Write(payload)
-	if g.bytes.Len() >= 15000 {
-		msgBytes := make([]byte, 15000)
+	if g.bytes.Len() >= 115156 {
+		msgBytes := make([]byte, 115156)
 		_, _ = g.bytes.Read(msgBytes)
 		msgBytes = swapBytes(msgBytes)
 		msgString := base64.StdEncoding.EncodeToString(msgBytes)
@@ -192,12 +193,16 @@ func (g *GladiaClient) ReadText() {
 			g.Running = false
 			return
 		}
-		if msg == "" {
-			if g.currentText != "" {
-				g.channel <- g.currentText
-			}
+		transcription := &AudioTranscription{}
+		msgBytes := []byte(msg)
+		err = json.Unmarshal(msgBytes, &transcription)
+		if err != nil {
+			log.Printf("ReadText: could not unmarshal response body: %s\n", err)
+			continue
 		}
-		g.currentText = msg
+		for _, item := range transcription.Prediction {
+			g.channel <- item.Transcription
+		}
 	}
 }
 
@@ -298,19 +303,18 @@ func ConversationSummary(conf *RecordServiceConfig, conversation []TranscriptIte
 }
 
 func NewGladiaClient(sampleRate int, conf *RecordServiceConfig) *GladiaClient {
-	conn, err := websocket.Dial("wss://aipi-riva-ws.k0s.gladia.io/audio/text/audio-transcription", "", "https://app.gladia.io")
+	conn, err := websocket.Dial("wss://aipi-triton-ws.k0s.gladia.io/audio/text/audio-transcription", "", "https://app.gladia.io")
 	if err != nil {
 		log.Printf("Error connecting to websocket: %v", err)
 		return nil
 	}
 	log.Printf("Gladia Client: Connected to websocket: %v", conn)
 	return &GladiaClient{conn: conn,
-		currentText:    "",
 		channel:        make(chan string),
 		audioChannel:   make(chan []byte),
 		completed:      make(chan interface{}),
 		audioCompleted: make(chan interface{}),
-		bytes:          bytes.NewBuffer(make([]byte, 2000)),
+		bytes:          bytes.NewBuffer(make([]byte, 20000)),
 		sampleRate:     sampleRate,
 		conf:           conf,
 		Running:        true,
