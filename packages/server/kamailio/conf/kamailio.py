@@ -551,7 +551,6 @@ class kamailio:
             if KSR.is_REGISTER() :
                 KSR.nathelper.fix_nated_register()
                 KSR.pv.sets("$avp(RECEIVED)", KSR.pv.gete("$avp(RECEIVED)") + ";home="+ KSR.pv.gete("$Ri"))
-                KSR.info("Set RECEIVED to " + KSR.pv.gete("$avp(RECEIVED)") + "\n")
             elif KSR.siputils.is_first_hop()>0 :
                 KSR.nathelper.set_contact_alias()
 
