@@ -5766,6 +5766,559 @@ class Jsonrpcs:
 			return node()
 		return node
 
+class Htable:
+	def sht_lock(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_lock", param0, param1))
+		if "sht_lock" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_lock']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_unlock(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_unlock", param0, param1))
+		if "sht_unlock" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_unlock']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_reset(self, param0: str) -> int:
+		print("Calling %s, %s" % ("htable.sht_reset", param0))
+		if "sht_reset" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_reset']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def sht_iterator_start(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_iterator_start", param0, param1))
+		if "sht_iterator_start" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_iterator_start']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_iterator_next(self, param0: str) -> int:
+		print("Calling %s, %s" % ("htable.sht_iterator_next", param0))
+		if "sht_iterator_next" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_iterator_next']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def sht_iterator_end(self, param0: str) -> int:
+		print("Calling %s, %s" % ("htable.sht_iterator_end", param0))
+		if "sht_iterator_end" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_iterator_end']
+		if isinstance(node, types.FunctionType):
+			return node(param0)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		return node
+
+	def sht_rm(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_rm", param0, param1))
+		if "sht_rm" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_rm']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_rm_name_re(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_rm_name_re", param0, param1))
+		if "sht_rm_name_re" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_rm_name_re']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_rm_value_re(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_rm_value_re", param0, param1))
+		if "sht_rm_value_re" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_rm_value_re']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_rm_name(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_rm_name", param0, param1, param2))
+		if "sht_rm_name" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_rm_name']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_rm_value(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_rm_value", param0, param1, param2))
+		if "sht_rm_value" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_rm_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_match_name(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_match_name", param0, param1, param2))
+		if "sht_match_name" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_match_name']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_match_str_value(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_match_str_value", param0, param1, param2))
+		if "sht_match_str_value" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_match_str_value']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_get(self, param0: str, param1: str) -> Union[int,str]:
+		print("Calling %s, %s, %s" % ("htable.sht_get", param0, param1))
+		if "sht_get" not in _mock_data['htable']:
+			return None
+		node = _mock_data['htable']['sht_get']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return None
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return None
+		return node
+
+	def sht_gete(self, param0: str, param1: str) -> Union[int,str]:
+		print("Calling %s, %s, %s" % ("htable.sht_gete", param0, param1))
+		if "sht_gete" not in _mock_data['htable']:
+			return None
+		node = _mock_data['htable']['sht_gete']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return None
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return None
+		return node
+
+	def sht_getw(self, param0: str, param1: str) -> Union[int,str]:
+		print("Calling %s, %s, %s" % ("htable.sht_getw", param0, param1))
+		if "sht_getw" not in _mock_data['htable']:
+			return None
+		node = _mock_data['htable']['sht_getw']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return None
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return None
+		return node
+
+	def sht_sets(self, param0: str, param1: str, param2: str) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_sets", param0, param1, param2))
+		if "sht_sets" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_sets']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_seti(self, param0: str, param1: str, param2: int) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_seti", param0, param1, param2))
+		if "sht_seti" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_seti']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_setex(self, param0: str, param1: str, param2: int) -> int:
+		print("Calling %s, %s, %s, %s" % ("htable.sht_setex", param0, param1, param2))
+		if "sht_setex" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_setex']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		return node
+
+	def sht_setxi(self, param0: str, param1: str, param2: int, param3: int) -> int:
+		print("Calling %s, %s, %s, %s, %s" % ("htable.sht_setxi", param0, param1, param2, param3))
+		if "sht_setxi" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_setxi']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2, param3)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param3) in node:
+			node = node[str(param3)]
+		else:
+			return 1
+		return node
+
+	def sht_setxs(self, param0: str, param1: str, param2: str, param3: int) -> int:
+		print("Calling %s, %s, %s, %s, %s" % ("htable.sht_setxs", param0, param1, param2, param3))
+		if "sht_setxs" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_setxs']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1, param2, param3)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param2) in node:
+			node = node[str(param2)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param3) in node:
+			node = node[str(param3)]
+		else:
+			return 1
+		return node
+
+	def sht_is_null(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_is_null", param0, param1))
+		if "sht_is_null" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_is_null']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_inc(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_inc", param0, param1))
+		if "sht_inc" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_inc']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
+	def sht_dec(self, param0: str, param1: str) -> int:
+		print("Calling %s, %s, %s" % ("htable.sht_dec", param0, param1))
+		if "sht_dec" not in _mock_data['htable']:
+			return 1
+		node = _mock_data['htable']['sht_dec']
+		if isinstance(node, types.FunctionType):
+			return node(param0, param1)
+		if not isinstance(node, dict):
+			return node
+		if str(param0) in node:
+			node = node[str(param0)]
+		else:
+			return 1
+		if not isinstance(node, dict):
+			return node
+		if str(param1) in node:
+			node = node[str(param1)]
+		else:
+			return 1
+		return node
+
 class Http_async_client:
 	def query(self, param0: str, param1: str) -> int:
 		print("Calling %s, %s, %s" % ("http_async_client.query", param0, param1))
@@ -8348,6 +8901,7 @@ sanity = Sanity()
 kex = Kex()
 corex = Corex()
 jsonrpcs = Jsonrpcs()
+htable = Htable()
 http_async_client = Http_async_client()
 xhttp = Xhttp()
 websocket = Websocket()
@@ -8380,6 +8934,7 @@ _mock_data['sanity'] = {}
 _mock_data['kex'] = {}
 _mock_data['corex'] = {}
 _mock_data['jsonrpcs'] = {}
+_mock_data['htable'] = {}
 _mock_data['http_async_client'] = {}
 _mock_data['xhttp'] = {}
 _mock_data['websocket'] = {}
