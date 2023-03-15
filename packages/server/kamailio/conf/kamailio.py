@@ -48,6 +48,37 @@ class kamailio:
     def __init__(self):
         KSR.info('===== kamailio.__init__\n')
 
+    def ksr_check_ban(self, msg):
+        ip = KSR.pv.get("$si")
+        if KSR.htable.sht_get("blocklist", ip) > 0:
+            KSR.htable.sht_inc("blocklist", ip)
+            KSR.sl.sl_send_reply(603, "Banned")
+            return -255
+        return 1
+
+    def ksr_check_apiban(self, msg):
+        ip = KSR.pv.get("$si")
+        if KSR.htable.sht_get("apiban", ip) > 0:
+            self.ban_ip(ip, "IP Found in APIBan")
+            return -255
+        return 1
+    def ban_ip(self, ip, reason):
+        KSR.info("APIBAN: ban ip: " + ip  + " reason: " + reason +  "\n")
+        KSR.htable.sht_seti("blocklist", ip, 1)
+        return 1
+
+    def preban_ip(self, ip, reason):
+        KSR.info("APIBAN: preban ip: " + ip + " reason: " + reason + "\n")
+        count = KSR.htable.sht_inc("preblockblocklist", "ip")
+        if count > 5:
+            self.ban_ip(ip, reason)
+        return 1
+
+    def clear_preban_ip(self, ip,):
+        KSR.info("APIBAN: clear preban ip: " + ip + "\n")
+        KSR.htable.sht_rm("preblockblocklist", ip)
+        return 1
+
     # executed when kamailio child processes are initialized
     def child_init(self, rank):
         KSR.info('===== kamailio.child_init(%d)\n' % rank)
@@ -58,6 +89,10 @@ class kamailio:
 
         self.apiBanKey = config["apiban"]["key"]
 
+        count = KSR.htable.sht_inc("apibanctl", "started")
+        KSR.info("APIBan started check: " + str(count) + "\n")
+        if count == 1:
+            self.ksr_apiban_update(None)
         return 0
 
     def ksr_enable_tracing(self, msg):
@@ -84,6 +119,9 @@ class kamailio:
 
         # per request initial checks
         if self.ksr_route_reqinit(msg) == -255:
+            return 1
+
+        if self.ksr_check_ban(msg) == -255:
             return 1
 
         # NAT detection
@@ -171,9 +209,11 @@ class kamailio:
     def ksr_route_sip_auth(self, msg):
         if KSR.auth_db.auth_check("openline.ai", "kamailio_subscriber", 1) < 0:
             KSR.auth.auth_challenge("openline.ai", 1)
+            self.preban_ip(KSR.pv.get("$si"), "Failed SIP Auth")
             return -255
         #auth passed, yay!
         KSR.auth.consume_credentials()
+        self.clear_preban_ip(KSR.pv.get("$si"))
         return 1
 
     # wrapper around tm relay function
@@ -195,6 +235,10 @@ class kamailio:
 
     # Per SIP request initial checks
     def ksr_route_reqinit(self, msg):
+        if self.ksr_check_ban(msg) == -255:
+            KSR.sl.sl_send_reply(603, "Banned")
+            return -255
+
         if KSR.corex.has_user_agent() > 0:
             ua = KSR.pv.gete("$ua")
             if (ua.find("friendly") != -1 or ua.find("scanner") != -1
@@ -214,6 +258,7 @@ class kamailio:
         if KSR.sanity.sanity_check(17895, 7) < 0:
             KSR.err("Malformed SIP message from "
                     + KSR.pv.get("$si") + ":" + str(KSR.pv.get("$sp")) + "\n")
+            self.preban_ip(KSR.pv.get("$si"), "Malformed SIP message")
             return -255
 
     # Handle requests within SIP dialogs
@@ -674,7 +719,7 @@ class kamailio:
         KSR.set_reply_close()
         KSR.set_reply_no_connect()
         if KSR.pv.get("$Rp") != 8080:
-            KSR.xhttp.xhttp_reply(403, "Forbidden", "" "")
+            KSR.xhttp.xhttp_reply(403, "Forbidden", "", "")
             return -255
 
         if re.search("websocket", KSR.pv.getw("$hdr(Upgrade)").lower()) is not None and re.search("upgrade", KSR.pv.getw("$hdr(Connection)").lower()) is not None and re.search("GET", KSR.pv.getw("$rm")) is not None:
@@ -711,31 +756,33 @@ class kamailio:
             KSR.err("Node Up! (node=%s)\n" % KSR.pv.gete("$ru"))
         return 1
 
-    def ksr_http_update_routes(self, msg):
-        if KSR.pv.get("$http_ok") != -1:
+    def ksr_http_update_bans(self, msg, eventname):
+        KSR.info("ksr_http_update_bans: http_ok=%s http_rs=%s\n" % (KSR.pv.gete("$http_ok"), KSR.pv.get("$http_rs")))
+        if KSR.pv.get("$http_ok") > 0 and KSR.pv.get("$http_rs") == 200:
             response = json.JSONDecoder().decode(KSR.pv.gete("$http_rb"))
             # iterate over response["ipaddresses"]
             for ip in response["ipaddress"]:
                 KSR.htable.sht_seti("apiban",  ip, 1)
-                KSR.pv.info("APIBAN: Addid block on ip %s\n" % ip)
+                KSR.info("APIBAN: Added block on ip %s\n" % ip)
 
             KSR.htable.sht_sets("apibanctl", "ID", response["ID"])
-            KSR.pv.info("APIBAN: New ID is %s\n" % (response["ID"]))
-
-    def ksr_apiban_update(self, msg):
-        if KSR.htable.sht_gete("apibanctl", "ID)") == 0:
-            KSR.http_async_client.query("https://apiban.org/api/" + self.apiBanKey + "/banned", "ksr_http_update_routes")
-        else:
-            KSR.http_async_client.query("https://apiban.org/api/" + self.apiBanKey + "/banned/" + str(KSR.htable.sht_gete("apibanctl", "ID")), "ksr_http_update_routes")
+            KSR.info("APIBAN: New ID is %s\n" % (response["ID"]))
         return 1
 
-    def ksr_htable_event(self, msg, evname):
-        if evname == "htable:mod-init":
-            KSR.dbg("htable init event\n")
-            self.ksr_apiban_update(msg)
-            return 1
-        elif evname == "htable:expired:blocklist":
-            KSR.dbg("htable blocklist expired event\n")
+    def ksr_apiban_update(self, msg):
+        last_id = str(KSR.htable.sht_get("apibanctl", "ID"))
+        KSR.info("apibanctl==" + last_id + "\n")
+        if last_id == "0":
+            KSR.info("APIBAN: No ID found, requesting full list\n")
+            url = "https://apiban.org/api/" + self.apiBanKey + "/banned"
+        else:
+            KSR.info("APIBAN: ID found, requesting update\n")
+            url = "https://apiban.org/api/" + self.apiBanKey + "/banned/" + KSR.htable.sht_gete("apibanctl", "ID")
+
+        KSR.info("APIBAN: Sending Request to %s\n" % url)
+        KSR.pv.seti("$http_req(suspend)", 0)
+        KSR.http_async_client.query(url, "ksr_http_update_bans")
+        return 1
 
 
     def log_info(self, msg: str):

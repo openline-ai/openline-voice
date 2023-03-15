@@ -32,7 +32,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ksr_utils.registrations["kamailio_location"][ksr_utils.pvar_get("$fu")], ksr_utils.pvar_get("$ct"))  # add assertion here
         self.assertEqual(ksr_utils.pvar_get("$(avp(RECEIVED){uri.param,home})"), "1.2.3.4")
 
-
     def test_INVITE_from_webrtc_to_webrtc(self):
         ksr_utils.pvar_set("$rm", "INVITE")
         ksr_utils.pvar_set("$ru", "sip:test@openline.ai")
@@ -40,7 +39,6 @@ class MyTestCase(unittest.TestCase):
         ksr_utils.pvar_set("$ct", "<sip:10.0.0.2:8080>")
         ksr_utils.pvar_set("$Rp", 8080)
         ksr_relay_called = False
-
 
         def my_relay():
             nonlocal ksr_relay_called
@@ -64,9 +62,9 @@ class MyTestCase(unittest.TestCase):
         k.ksr_request_route(None)
 
         self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:transcode@openline.ai", "RURI not set to expected destination")  # add assertion here
-        self.assertEqual(ksr_utils.pvar_get("$nh(u)"),"sip:dispatcher_group_0", "Dispatcher not invoked to right dispatcher group")
-        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Endpoint-Type)"),"webrtc", "Endpoint header not correctly set")
-        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest-Endpoint-Type)"),"webrtc", "Dest Endpoint Header not set")
+        self.assertEqual(ksr_utils.pvar_get("$nh(u)"), "sip:dispatcher_group_0", "Dispatcher not invoked to right dispatcher group")
+        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Endpoint-Type)"), "webrtc", "Endpoint header not correctly set")
+        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest-Endpoint-Type)"), "webrtc", "Dest Endpoint Header not set")
 
         self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest)"), "sip:test@openline.ai", "X-Openline-Dest not set!")
 
@@ -76,7 +74,7 @@ class MyTestCase(unittest.TestCase):
     def test_INVITE_reformat_number(self):
         k = kamailio.kamailio()
 
-        result = k.formatInternational("+442038352071", "07810015381")
+        result = k.format_international("+442038352071", "07810015381")
         self.assertEqual("+447810015381", result)
     def test_INVITE_from_webrtc_to_pstn(self):
         ksr_utils.pvar_set("$rm", "INVITE")
@@ -106,10 +104,10 @@ class MyTestCase(unittest.TestCase):
         k = kamailio.kamailio()
         k.kamailioDB = TestKamailioDatabase.TestKamailioDatabase()
 
-        def mock_sipuri_mapping(sipuri:str):
-            self.assertEqual(sipuri,"sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
+        def mock_sipuri_mapping(sipuri: str):
+            self.assertEqual(sipuri, "sip:AgentSmith@agent.openline.ai", "Incorrect key lookup in database")
             return {"e164": '+328080970',
-                    "alias":'+322800000',
+                    "alias": '+322800000',
                     "carrier": 'test_carrier',
                     "sipuri": 'sip:AgentSmith@agent.openline.ai'
             }
@@ -119,9 +117,9 @@ class MyTestCase(unittest.TestCase):
         k.ksr_request_route(None)
 
         self.assertEqual(ksr_utils.pvar_get("$ru"), "sip:transcode@openline.ai", "RURI not set to expected destination")  # add assertion here
-        self.assertEqual(ksr_utils.pvar_get("$nh(u)"),"sip:dispatcher_group_0", "Dispatcher not invoked to right dispatcher group")
-        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Endpoint-Type)"),"webrtc", "Endpoint Header not set")
-        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest-Endpoint-Type)"),"pstn", "Dest Endpoint Header not set")
+        self.assertEqual(ksr_utils.pvar_get("$nh(u)"), "sip:dispatcher_group_0", "Dispatcher not invoked to right dispatcher group")
+        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Endpoint-Type)"), "webrtc", "Endpoint Header not set")
+        self.assertEqual(ksr_utils.pvar_get("$hdr(X-Openline-Dest-Endpoint-Type)"), "pstn", "Dest Endpoint Header not set")
 
 
         self.assertIsNotNone(ksr_utils.pvar_get("$hdr(X-Openline-UUID)"), "Missing UUID Header")
