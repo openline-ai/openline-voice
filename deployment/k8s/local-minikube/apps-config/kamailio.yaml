@@ -39,6 +39,8 @@ spec:
               value: asterisk.openline.svc.cluster.local
             - name: HOMER_IP
               value: 127.0.0.2
+            - name: APIBAN_KEY
+              value: invalid
             - name: DMQ_DOMAIN
               valueFrom:
                 fieldRef:

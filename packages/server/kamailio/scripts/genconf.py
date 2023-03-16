@@ -24,5 +24,8 @@ config['database'] = {'host': escape(os.getenv("SQL_HOST")),
                       'database': escape(os.getenv("SQL_DATABASE")),
                       'user': escape(os.getenv("SQL_USER")),
                       'password': escape(os.getenv("SQL_PASSWORD"))}
+
+config['apiban'] = {'key': escape(os.getenv("APIBAN_KEY"))}
+
 with open('/etc/kamailio/config.ini', 'w') as configfile:
     config.write(configfile)

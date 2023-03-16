@@ -43,6 +43,11 @@ data "amazon-parameterstore" "homer_ip" {
   with_decryption = false
 }
 
+data "amazon-parameterstore" "apiban_key" {
+  name = "/config/kamailio-server_${var.environment}/apiban_key"
+  with_decryption = true
+}
+
 # usage example of the data source output
 locals {
   auth_secret   = data.amazon-parameterstore.auth_secret.value
@@ -52,6 +57,7 @@ locals {
   db_password   = data.amazon-parameterstore.db_password.value
   dmq_domain  = data.amazon-parameterstore.dmq_domain.value
   homer_ip = data.amazon-parameterstore.homer_ip.value
+  apiban_key = data.amazon-parameterstore.apiban_key.value
 }
 
 packer {
@@ -120,7 +126,7 @@ build {
       "sudo sh -c 'mv /tmp/kamailio/logging/kamailio.syslog.conf /etc/rsyslog.d/'",
       "sudo sh -c 'mv /tmp/kamailio/logging/kamailio.logrotate /etc/logrotate.d/kamailio'",
       "sudo sh -c 'chown kamailio:kamailio /etc/kamailio/'",
-      "sudo sh -c 'HOMER_IP=\"${local.homer_ip}\" DMQ_DOMAIN=\"${local.dmq_domain}\" AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" /etc/kamailio/genconf.py'",
+      "sudo sh -c 'HOMER_IP=\"${local.homer_ip}\" DMQ_DOMAIN=\"${local.dmq_domain}\" AUTH_SECRET=\"${local.auth_secret}\" SQL_HOST=\"${local.db_host}\" SQL_USER=\"${local.db_user}\" SQL_PASSWORD=\"${local.db_password}\" SQL_DATABASE=\"${local.db_database}\" APIBAN_KEY=\"${local.apiban_key}\" /etc/kamailio/genconf.py'",
       "sudo sh -c 'touch /etc/kamailio/dispatcher.list'",
       "sudo sh -c 'cd /tmp/; curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O; chmod a+x awslogs-agent-setup.py'",
       "sudo sh -c 'cd /tmp/; ./awslogs-agent-setup.py -r ${var.region} -n -c /tmp/kamailio/logging/awslogs.conf'",

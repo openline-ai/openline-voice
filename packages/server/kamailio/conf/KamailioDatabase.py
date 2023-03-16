@@ -1,10 +1,11 @@
 import psycopg2
 
+
 class KamailioDatabase:
     connection = None
     conn_string = None
 
-    def __init__(self, host: str, database: str, user: str, password:str):
+    def __init__(self, host: str, database: str, user: str, password: str):
         self.conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (host, database, user, password)
         self.connection = psycopg2.connect(self.conn_string)
         self.connection.set_session(autocommit=True)
@@ -17,7 +18,7 @@ class KamailioDatabase:
             self.connection = psycopg2.connect(self.conn_string)
             self.connection.set_session(autocommit=True)
 
-    def lookup_carrier(self, carrier:str):
+    def lookup_carrier(self, carrier: str):
         self.test_connection()
         with self.connection.cursor() as cur:
 
@@ -30,7 +31,7 @@ class KamailioDatabase:
                         "domain": record[2]}
         return None
 
-    def find_sipuri_mapping(self, sipuri:str):
+    def find_sipuri_mapping(self, sipuri: str):
         self.test_connection()
         with self.connection.cursor() as cur:
 
@@ -45,7 +46,7 @@ class KamailioDatabase:
                         }
         return None
 
-    def find_e164_mapping(self, e164:str, carrier:str):
+    def find_e164_mapping(self, e164: str, carrier: str):
         self.test_connection()
         with self.connection.cursor() as cur:
             cur.execute("SELECT sipuri, phoneuri FROM openline_number_mapping WHERE e164=%s AND carrier_name=%s", (e164, carrier))
