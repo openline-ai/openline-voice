@@ -1,4 +1,5 @@
 import re
+from typing import Union
 
 pvar_vals = {}
 hdr_vals = {}
@@ -25,6 +26,12 @@ def ksr_utils_init(_mock_data):
     _mock_data['pv']['getw'] = pvar_getw
     _mock_data['pv']['gete'] = pvar_gete
     _mock_data['pv']['sets'] = pvar_set
+    _mock_data['htable']['sht_get'] = sht_get
+    _mock_data['htable']['sht_getw'] = sht_getw
+    _mock_data['htable']['sht_gete'] = sht_gete
+    _mock_data['htable']['sht_inc'] = sht_inc
+    _mock_data['htable']['sht_sets'] = sht_set
+    _mock_data['htable']['sht_seti'] = sht_set
     _mock_data['']['is_INVITE'] = is_invite
     _mock_data['']['is_KDMQ'] = is_kdmq
     _mock_data['']['is_ACK'] = is_ack
@@ -60,7 +67,6 @@ def hdr_remove(hdr_key: str):
 
 def hdr_append(hdr: str):
     global hdr_vals
-
     if not hdr.endswith("\r\n"):
         print("missing end newline! (%s)\n" % str)
         assert False
@@ -113,7 +119,7 @@ def pvar_gete(key):
 def pvar_getw(key):
     val = pvar_get(key)
     if val is None:
-        return "<<null>>"
+        return "<null>"
     return val
 
 def resolve_xval(key):
@@ -254,6 +260,44 @@ def pvar_set(key, value):
         return 1
     pvar_vals[key] = value
     return 1
+
+
+def sht_set(table: str, key: str, value: Union[str,int]):
+    global pvar_vals
+
+    pvar_vals["$sht(%s=>%s)" % (table, key)] = value
+    return 1
+
+
+def sht_get(table: str, key: str) -> Union[str,int]:
+    val = pvar_get("$sht(%s=>%s)" % (table, key))
+    if val is None:
+        if table in ["apbanctl", "blocklist", "preblockblocklist"]:
+            return 0
+    return val
+
+
+def sht_gete(table: str, key: str) -> Union[str,int]:
+    val =  sht_get(table, key)
+    if val is None:
+        return ""
+    return val
+
+
+def sht_getw(table: str, key: str) -> Union[str,int]:
+    val =  sht_get(table, key)
+    if val is None:
+        return "<null>"
+    return val
+
+
+def sht_inc(table: str, key: str) -> int:
+    val = sht_get(table, key)
+    if val is None:
+        return -255
+    val = val + 1
+    sht_set(table, key, val)
+    return val
 
 
 def siputils_has_to_tag():
