@@ -82,7 +82,7 @@ func (v *VConEventPublisher) publish(message *model.VCon) {
 	bodyReader := bytes.NewReader(body)
 
 	log.Printf("client: sending request: \n%s\n", string(body))
-	requestURL := fmt.Sprintf("%s/api/v1/vcon", v.conf.ChannelsApiService)
+	requestURL := fmt.Sprintf("%s/vcon", v.conf.ChannelsApiService)
 	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Openline-VCon-Api-Key", v.conf.ChannelsApiKey)
