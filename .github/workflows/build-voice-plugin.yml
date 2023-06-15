@@ -37,7 +37,7 @@ jobs:
 
       - name: Install Swag
         working-directory: ./packages/apps/voice-plugin
-        run: go install github.com/swaggo/swag/cmd/swag@latest
+        run: go install github.com/swaggo/swag/cmd/swag@v1.8.12
 
       - name: Generate Voice Plugin
         working-directory: ./packages/apps/voice-plugin
