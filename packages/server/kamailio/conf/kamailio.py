@@ -207,13 +207,17 @@ class kamailio:
         return 1
 
     def ksr_route_sip_auth(self, msg):
-        if KSR.auth_db.auth_check("openline.ai", "kamailio_subscriber", 1) < 0:
+        if KSR.hdr.is_present("Authorization") > 0 or KSR.hdr.is_present("Proxy-Authorization") > 0:
+            if KSR.auth_db.auth_check("openline.ai", "kamailio_subscriber", 1) < 0:
+                KSR.auth.auth_challenge("openline.ai", 1)
+                self.preban_ip(KSR.pv.get("$si"), "Failed SIP Auth")
+                return -255
+            #auth passed, yay!
+            KSR.auth.consume_credentials()
+            self.clear_preban_ip(KSR.pv.get("$si"))
+        else:
             KSR.auth.auth_challenge("openline.ai", 1)
-            self.preban_ip(KSR.pv.get("$si"), "Failed SIP Auth")
             return -255
-        #auth passed, yay!
-        KSR.auth.consume_credentials()
-        self.clear_preban_ip(KSR.pv.get("$si"))
         return 1
 
     # wrapper around tm relay function
