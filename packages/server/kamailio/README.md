@@ -49,7 +49,7 @@ packer build aws-debian.pkr.hcl
 To build the packer image for a different enviroment, you can specify the enviornment as a variable
 ```
 packer init aws-debian.pkr.hcl
-packer build -var "environment=development" aws-debian.pkr.hcl
+packer build -var "environment=openline-dev" aws-debian.pkr.hcl
 ```
 
 For production you need to specify both the environment and the region

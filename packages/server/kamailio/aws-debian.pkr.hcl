@@ -122,6 +122,7 @@ build {
       "sudo sh -c 'mv /tmp/kamailio/conf/* /etc/kamailio/'",
       "sudo sh -c 'mv /tmp/kamailio/scripts/genconf.py /etc/kamailio/'",
       "sudo sh -c 'mv /tmp/kamailio/scripts/kamailio_network_setup.sh /usr/sbin/'",
+      "sudo sh -c 'mv /tmp/kamailio/scripts/aws_ip_discovery.sh /usr/sbin/'",
       "sudo sh -c 'mv /tmp/kamailio/scripts/kamailio.service /lib/systemd/system/'",
       "sudo sh -c 'mv /tmp/kamailio/logging/kamailio.syslog.conf /etc/rsyslog.d/'",
       "sudo sh -c 'mv /tmp/kamailio/logging/kamailio.logrotate /etc/logrotate.d/kamailio'",

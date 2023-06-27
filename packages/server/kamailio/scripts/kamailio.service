@@ -14,8 +14,7 @@ EnvironmentFile=-/etc/default/kamailio
 EnvironmentFile=-/etc/default/kamailio.d/*
 # PIDFile requires a full absolute path
 PIDFile=/run/kamailio/kamailio.pid
-ExecStartPre=/bin/sh -c 'echo export LOCAL_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4` > /etc/kamailio/kamailio_env'
-ExecStartPre=/bin/sh -c 'echo export PUBLIC_IP=`curl -s http://169.254.169.254/latest/meta-data/public-ipv4` >> /etc/kamailio/kamailio_env'
+ExecStartPre=/bin/sh -c '/usr/sbin/aws_ip_discovery.sh` > /etc/kamailio/kamailio_env'
 ExecStartPre=/bin/sh -c '. /etc/kamailio/kamailio_env && /usr/sbin/kamailio_network_setup.sh'
 # ExecStart requires a full absolute path
 ExecStart=/usr/sbin/kamailio -P /run/kamailio/kamailio.pid -f $CFGFILE -m $SHM_MEMORY -M $PKG_MEMORY --atexit=no
