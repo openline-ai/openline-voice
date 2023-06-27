@@ -6,8 +6,9 @@ After=network-online.target
 
 [Service]
 Type=notify
-ExecStartPre=/bin/sh -c 'systemctl set-environment LOCAL_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`'
-ExecStartPre=/bin/sh -c 'systemctl set-environment PUBLIC_IP=`curl -s http://169.254.169.254/latest/meta-data/public-ipv4`'
+ExecStartPre=/bin/sh -c 'systemctl set-environment IMDS_TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`'
+ExecStartPre=/bin/sh -c 'systemctl set-environment LOCAL_IP=`curl -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" -s http://169.254.169.254/latest/meta-data/local-ipv4`'
+ExecStartPre=/bin/sh -c 'systemctl set-environment PUBLIC_IP=`curl -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" -s http://169.254.169.254/latest/meta-data/public-ipv4`'
 ExecStartPre=/usr/sbin/asterisk_network_setup.sh
 ExecStart=/usr/sbin/asterisk -g -f -p -U asterisk
 ExecReload=/usr/sbin/asterisk -rx 'core reload'
