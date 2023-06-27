@@ -6,7 +6,7 @@ variable "region" {
 
 variable "environment" {
 	type=string
-	default="uat-ninja"
+	default="openline-dev"
 	sensitive=false
 }
 
